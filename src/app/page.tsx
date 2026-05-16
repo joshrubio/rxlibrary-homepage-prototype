@@ -833,12 +833,12 @@ export default function HomePage() {
                 {/* Orbital nodes — bento card style (white rim + deep shadow + dark inside) */}
                 {([
                   { label: 'ICHRA',     sub: 'Employer',          accent: '#D4A017', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', pct: [50,   12.5] },
-                  { label: 'Clinician', sub: 'Provider Portal',   accent: '#3B82F6', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',                                                             pct: [76.2, 25]   },
+                  { label: 'Clinician', sub: 'Provider Portal',   accent: '#3B82F6', icon: 'M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4M22 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0', pct: [76.2, 25]   },
                   { label: 'eRx',       sub: 'Prescriptions',     accent: '#8B5CF6', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',            pct: [87.5, 50]   },
                   { label: 'Pharmacy',  sub: 'Fulfillment',       accent: '#F59E0B', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',                                                                 pct: [76.2, 75]   },
                   { label: 'Provider',  sub: 'Network',           accent: '#10B981', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0',  pct: [50,   87.5] },
                   { label: 'Payments',  sub: 'Stripe',            accent: '#06B6D4', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',                                         pct: [23.8, 75]   },
-                  { label: 'Patient',   sub: 'Experience',        accent: '#EC4899', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z',    pct: [12.5, 50]   },
+                  { label: 'Patient',   sub: 'Experience',        accent: '#EC4899', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',                                                          pct: [12.5, 50]   },
                   { label: 'Admin',     sub: 'Merchant Dashboard', accent: '#64748B', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', pct: [23.8, 25] },
                 ] as { label: string; sub: string; accent: string; icon: string; pct: [number, number] }[]).map(({ label, sub, accent, icon, pct }, i) => (
                   /* Bento card: white rim + deep shadow + image bg with baked dark tint */
@@ -890,10 +890,12 @@ export default function HomePage() {
                       <div style={{
                         position: 'relative', zIndex: 1,
                         width: 40, height: 40, borderRadius: 12,
-                        background: `${accent}22`,
-                        border: `1px solid ${accent}50`,
+                        background: 'rgba(255,255,255,0.10)',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
+                        border: 'none',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: `0 0 16px ${accent}35`,
+                        boxShadow: 'none',
                       }}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                           stroke={accent} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
