@@ -1191,7 +1191,7 @@ export default function HomePage() {
           <div style={{
             position: 'relative', zIndex: 5,
             display: 'flex', alignItems: 'center',
-            padding: '100px 80px 100px 0px',
+            padding: '100px 48px 100px 0px',
           }}>
             <FadeUp>
               <div style={{ textAlign: 'right' }}>
