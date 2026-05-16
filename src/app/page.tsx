@@ -1113,7 +1113,7 @@ export default function HomePage() {
             overflow: 'hidden',
             minHeight: '100vh',
             display: 'grid',
-            gridTemplateColumns: '1fr 900px',
+            gridTemplateColumns: '1fr 800px',
           }}
         >
           {/* ── Bento bg — content cards ─────────────────────────────────────────── */}
@@ -1133,7 +1133,9 @@ export default function HomePage() {
                 <div key={i} style={{
                   borderRadius: 28,
                   background: '#ffffff',
-                  border: '1.5px solid #EBEBEB',
+                  borderWidth: '1.5px',
+                  borderStyle: 'solid',
+                  borderColor: '#EBEBEB',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
                   padding: '28px 28px 32px',
                   display: 'flex',
@@ -1191,7 +1193,7 @@ export default function HomePage() {
           <div style={{
             position: 'relative', zIndex: 5,
             display: 'flex', alignItems: 'center',
-            padding: '100px 48px 100px 0px',
+            padding: '100px 240px 100px 0px',
           }}>
             <FadeUp>
               <div style={{ textAlign: 'right' }}>
@@ -1209,7 +1211,7 @@ export default function HomePage() {
                   <br />
                   <span style={{ color: '#111111' }}>already connected.</span>
                 </h2>
-                <p style={{ fontSize: 16, lineHeight: 1.7, color: '#888', margin: 0, maxWidth: 360, marginLeft: 'auto' }}>
+                <p style={{ fontSize: 16, lineHeight: 1.7, color: '#888', margin: 0, maxWidth: 460, marginLeft: 'auto' }}>
                   Inherit the full network — providers, pharmacies, compliance — live from day one.
                 </p>
               </div>
@@ -1219,7 +1221,7 @@ export default function HomePage() {
 
         {/* ── Placeholder — scroll buffer ──────────────────────────────────── */}
         <section style={{ minHeight: '100vh', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-          <p style={{ color: '#ccc', fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Section 5 — Pricing</p>
+          <p style={{ color: '#ccc', fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Pending sections, coming soon</p>
         </section>
 
         {/* ── Section 4: Testimonials ──────────────────────────────────────── */}
