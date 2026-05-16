@@ -279,7 +279,7 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
         const ih    = window.innerHeight;
         // Orbital center ≈ section top + 450px (half of 900px orbital container)
         const yFrac = (s2Top + 450) / ih;
-        s2wInto(0.68, yFrac, _dynPos);
+        s2wInto(0.73, yFrac, _dynPos);
         targetPos = _dynPos;
       } else if (ki === 2 && section3Ref.current) {
         const s3Top = section3Ref.current.getBoundingClientRect().top;
@@ -377,7 +377,7 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
       renderer.setSize(nw, nh);
       camera.updateMatrixWorld();
       KFS[0]!.pos.copy(s2w(0.50, 0.05));
-      KFS[1]!.pos.copy(s2w(0.68, 0.50));
+      KFS[1]!.pos.copy(s2w(0.73, 0.50));
       KFS[2]!.pos.copy(s2w(0.74, 0.30));
     };
     window.addEventListener('resize', onResize);
