@@ -489,8 +489,8 @@ export default function HomePage() {
           }}
         />
 
-        {/* Floating badge chips */}
-        {BADGES.map((b) => (
+        {/* Floating badge chips — hidden */}
+        {false && BADGES.map((b) => (
           <div
             key={b.text}
             className="hero-badge"
@@ -973,7 +973,7 @@ export default function HomePage() {
                 const SC  = [0.80, 0.91, 1.02, 0.0][Math.min(abs, 3)]!;
                 const RY  = [0,    26,   46,   58][Math.min(abs, 3)]! * -sign;
                 const TZ  = [-50,  20,   85,   0][Math.min(abs, 3)]!;
-                const OP  = [0.74, 0.90, 1.0,  0][Math.min(abs, 3)]!;
+                const OP  = [1.0,  1.0,  1.0,  0][Math.min(abs, 3)]!;
                 const ZI  = [4,    6,    9,    0][Math.min(abs, 3)]!;
 
                 const hex    = card.colors[0]!;
@@ -1239,7 +1239,7 @@ export default function HomePage() {
             zIndex: 5,
             display: 'flex',
             alignItems: 'flex-start',
-            padding: '120px 20px 80px 380px',
+            padding: '100px 40px 100px 80px',
           }}>
             <FadeUp>
               <div>
