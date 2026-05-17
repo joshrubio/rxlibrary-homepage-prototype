@@ -48,12 +48,12 @@ export function MarketingNav({ isLoggedIn, dashboardHref }: MarketingNavProps) {
       <nav
         className="fixed top-0 left-0 right-0 z-50"
         style={{
-          background: scrolled ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.10)',
-          backdropFilter: 'blur(18px)',
-          WebkitBackdropFilter: 'blur(18px)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-          transition: 'background 0.25s ease, box-shadow 0.25s ease',
-          boxShadow: scrolled ? '0 2px 20px rgba(0,0,0,0.2)' : 'none',
+          background: '#1F1F22',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          transition: 'box-shadow 0.25s ease',
+          boxShadow: scrolled
+            ? '0 8px 32px rgba(0,0,0,0.55), 0 -1px 0 rgba(255,255,255,0.04) inset'
+            : '0 4px 20px rgba(0,0,0,0.40), 0 -1px 0 rgba(255,255,255,0.04) inset',
         }}
       >
         <div className="flex items-center justify-between h-16 px-6 lg:px-12 max-w-8xl mx-auto">
@@ -61,11 +61,11 @@ export function MarketingNav({ isLoggedIn, dashboardHref }: MarketingNavProps) {
           {/* Logo */}
           <button
             onClick={() => scrollTo('hero')}
-            className="flex items-center gap-2 font-bold text-xl select-none focus:outline-none"
-            style={{ letterSpacing: '-0.04em', color: '#fff' }}
+            className="flex items-center text-xl select-none focus:outline-none"
+            style={{ letterSpacing: '-0.04em', textTransform: 'none' }}
           >
-            <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: '#FEC944' }} />
-            Rx Library
+            <span style={{ color: '#FEC944', fontWeight: 400 }}>rx</span>
+            <span style={{ color: '#ffffff', fontWeight: 700 }}>library</span>
           </button>
 
           {/* Desktop links */}
@@ -86,15 +86,23 @@ export function MarketingNav({ isLoggedIn, dashboardHref }: MarketingNavProps) {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href={isLoggedIn ? dashboardHref : '/login'}
-              className="text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-70"
-              style={{ color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.22)' }}
+              className="text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-80"
+              style={{
+                color: 'rgba(255,255,255,0.65)',
+                background: '#1F1F22',
+                border: 'none',
+                boxShadow: '6px 6px 16px rgba(0,0,0,0.55), -4px -4px 10px rgba(255,255,255,0.045)',
+              }}
             >
               {isLoggedIn ? 'Dashboard' : 'Log In'}
             </Link>
             <a
               href="/demo"
               className="text-sm font-semibold px-5 py-2.5 rounded-[9px] transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: '#FEC944', color: '#1E1E1E' }}
+              style={{
+                background: '#FEC944', color: '#1A1200',
+                boxShadow: '6px 6px 16px rgba(0,0,0,0.50), -4px -4px 10px rgba(255,255,255,0.04)',
+              }}
             >
               Book a demo →
             </a>

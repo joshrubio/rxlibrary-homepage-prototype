@@ -79,9 +79,12 @@ interface Props {
   heroRef: RefObject<HTMLElement | null>;
   section2Ref: RefObject<HTMLElement | null>;
   section3Ref: RefObject<HTMLElement | null>;
+  section4Ref: RefObject<HTMLElement | null>;
+  section5Ref: RefObject<HTMLElement | null>;
+  footerRef: RefObject<HTMLElement | null>;
 }
 
-export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
+export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, section5Ref, footerRef }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -145,6 +148,40 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
       }
     }
 
+    // ── Hero scatter — pieces start in frozen-explosion arrangement ───────────
+    interface HeroCubie {
+      group: THREE.Group;
+      gridPos: THREE.Vector3;    // canonical grid position
+      scatterPos: THREE.Vector3; // hero display position (radially spread)
+    }
+    const heroCubies: HeroCubie[] = (rubik.children as THREE.Group[]).map((group) => {
+      const gridPos = group.position.clone();
+      const dir = gridPos.clone();
+      if (dir.lengthSq() < 0.001) dir.set(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5);
+      dir.normalize();
+      const dist = 1.0 + Math.random() * 1.4;
+      const scatterPos = new THREE.Vector3(
+        gridPos.x + dir.x * dist + (Math.random()-0.5) * 0.35,
+        gridPos.y + dir.y * dist + (Math.random()-0.5) * 0.35,
+        gridPos.z + dir.z * dist + (Math.random()-0.5) * 0.35,
+      );
+      group.position.copy(scatterPos); // start in scattered state
+      return { group, gridPos, scatterPos };
+    });
+    type HeroPhase = 'scattered' | 'scattering';
+    let heroPhase: HeroPhase = 'scattered';
+
+    // ── Per-KF camera positions ───────────────────────────────────────────────
+    // KF 0-2 share the diagonal hero view; KF 3 moves to front-face + floor view.
+    const CAM_POSITIONS = [
+      new THREE.Vector3(3.2, 2.8, 3.2),  // KF0 — diagonal
+      new THREE.Vector3(3.2, 2.8, 3.2),  // KF1 — diagonal
+      new THREE.Vector3(3.2, 2.8, 3.2),  // KF2 — diagonal
+      new THREE.Vector3(0.0, 1.2, 5.5),  // KF3 — front face, slight elevation
+      new THREE.Vector3(0.0, 1.2, 5.5),  // KF4 — same front face for floor scatter
+      new THREE.Vector3(3.2, 2.8, 3.2),  // KF5 — footer: back to diagonal, cube left side
+    ];
+
     // ── Screen → world (focal-plane raycaster) ────────────────────────────────
     camera.updateMatrixWorld();
     const focalPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(
@@ -152,6 +189,7 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
       new THREE.Vector3(0, 0, 0),
     );
     const raycaster = new THREE.Raycaster();
+    const _camDir = new THREE.Vector3(); // scratch — recomputed each frame
 
     function s2w(sx: number, sy: number) {
       raycaster.setFromCamera(new THREE.Vector2(sx * 2 - 1, -(sy * 2 - 1)), camera);
@@ -178,11 +216,17 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
 
     const KFS: KF[] = [
       // 0 — Hero: large, top-center, warm glow, sticker blip
-      { pos: s2w(0.50, 0.05), sc: 1.8,  ambI: 0.22, glI: 4.5, ry: 0.14, rx: 0.04, rc: false },
+      { pos: s2w(0.50, 0.05), sc: 1.44, ambI: 0.22, glI: 4.5, ry: 0.14, rx: 0.04, rc: false },
       // 1 — Orbital: small, right side, full ambient, sticker blip
-      { pos: s2w(0.68, 0.50), sc: 0.47, ambI: 1.0,  glI: 0,   ry: 0.30, rx: 0.08, rc: false },
+      { pos: s2w(0.73, 0.50), sc: 0.47, ambI: 1.0,  glI: 0,   ry: 0.30, rx: 0.08, rc: false },
       // 2 — White Label: small, right column next to title, palette cycle
       { pos: s2w(0.74, 0.30), sc: 0.50, ambI: 1.0,  glI: 0,   ry: 0.28, rx: 0.07, rc: true  },
+      // 3 — Care Network: center-left bento, blip stickers like hero, looping explode+reassemble
+      { pos: s2w(0.68, 0.82), sc: 0.65, ambI: 0.22, glI: 4.5, ry: 0.00, rx: 0.00, rc: false },
+      // 4 — Testimonials: center, floor-scatter animation, warm glow
+      { pos: s2w(0.50, 0.40), sc: 0.65, ambI: 0.22, glI: 4.5, ry: 0.00, rx: 0.00, rc: false },
+      // 5 — Footer: left side, gentle rotation, warm glow, sticker blip
+      { pos: s2w(0.22, 0.58), sc: 0.75, ambI: 0.22, glI: 4.5, ry: 0.18, rx: 0.05, rc: false },
     ];
 
     rubik.position.copy(KFS[0]!.pos);
@@ -199,13 +243,33 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
     // ── Keyframe index — pure threshold logic, no interpolation ───────────────
     function getKFIndex(): number {
       const sy   = window.scrollY;
-      const hBot = heroRef.current     ? docBottom(heroRef.current)   : window.innerHeight;
+      const hBot = heroRef.current
+        ? docBottom(heroRef.current) - window.innerHeight * 0.70
+        : window.innerHeight * 0.30;
       const s2T  = section2Ref.current ? docTop(section2Ref.current)  : hBot + 600;
       const s3T  = section3Ref.current ? docTop(section3Ref.current)  : s2T + 900;
+      const s4T  = section4Ref.current ? docTop(section4Ref.current)  : s3T + 900;
+      const s5T  = section5Ref.current ? docTop(section5Ref.current)  : s4T + 1100;
+      const s6T  = footerRef.current   ? docTop(footerRef.current)    : s5T + 2000;
+      // KF 3 fires when section 4 top enters the viewport (70% from top)
+      const s4Mid = s4T - window.innerHeight * 0.7;
+      // KF 3 ends when section 4 bottom has mostly scrolled past
+      const s4Bot = s4T + (section4Ref.current?.offsetHeight ?? 1050);
+      const s4End = s4Bot - window.innerHeight * 0.2;
+      // KF 4 fires when section 5's center reaches the viewport center
+      const s5Mid = section5Ref.current
+        ? s5T + section5Ref.current.offsetHeight / 2 - window.innerHeight / 2
+        : s4T + 2200;
+      // KF 5 fires when footer top enters viewport 40% from top
+      const footerThresh = s6T - window.innerHeight * 0.4;
 
       if (sy < hBot)                            return 0;
       if (sy < s3T - window.innerHeight * 0.6) return 1;
-      return 2;
+      if (sy < s4Mid)                           return 2;
+      if (sy < s4End)                           return 3;  // Care Network only
+      if (sy < s5Mid)                           return 2;  // gap: cube drifts off via KF2 scroll-relative
+      if (sy < footerThresh)                    return 4;  // Testimonials
+      return 5;                                            // Footer
     }
 
     // ── Face-rotation animation (KF 1 — orbital section) ─────────────────────
@@ -261,6 +325,47 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
     const RC_HOLD = 2.0, RC_DUR = 1.2;
     const eio = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
+    // ── Explode + reassemble animation (KF 3) ────────────────────────────────
+    // assembled → hold → explode outward radially → brief pause → pieces fly back
+    interface ShatterCubie {
+      group: THREE.Group;
+      restPos: THREE.Vector3;    // assembled grid position
+      scatterPos: THREE.Vector3; // explosion target
+      delay: number;             // stagger delay — explode
+      dur: number;               // duration — explode
+      rDelay: number;            // stagger delay — reassemble
+      rDur: number;              // duration — reassemble
+    }
+    let shatterCubies: ShatterCubie[] = [];
+    type ShatterPhase = 'idle' | 'settling' | 'assembled' | 'exploding' | 'scatterHold' | 'reassembling' | 'done';
+    let shatterPhase: ShatterPhase = 'idle';
+    let shatterElapsed    = 0;
+    let reassembleElapsed = 0;
+    let assembleTimer     = 0;
+    let scatterHoldTimer  = 0;
+    const ASSEMBLE_HOLD = 0.7;   // seconds assembled before exploding
+    const SCATTER_HOLD  = 0.35;  // seconds scattered before reassembling
+    let shatterLockPos: THREE.Vector3 | null = null;
+    let prevKI = -1;
+    const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
+
+    // ── Floor-scatter animation (KF 4 — Testimonials) ─────────────────────────
+    // Cube appears assembled → hold → pieces scatter to flat floor, stay there
+    interface FloorCubie {
+      group: THREE.Group;
+      restPos: THREE.Vector3;
+      scatterPos: THREE.Vector3;
+      delay: number;
+      dur: number;
+    }
+    let floorCubies: FloorCubie[] = [];
+    type FloorPhase = 'idle' | 'settling' | 'assembled' | 'shattering' | 'done';
+    const SETTLE_DIST = 0.25; // world units — cube must be this close before animation fires
+    let floorPhase: FloorPhase = 'idle';
+    let floorElapsed   = 0;
+    let floorHoldTimer = 0;
+    let floorLockPos: THREE.Vector3 | null = null;
+
     // ── Animation loop ────────────────────────────────────────────────────────
     const clock = new THREE.Clock();
 
@@ -268,6 +373,15 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
       const delta = clock.getDelta();
       const ki = getKFIndex();
       const kf = KFS[ki]!;
+
+      // ── Camera per-KF lerp ────────────────────────────────────────────────────
+      // Move camera toward KF target, then recompute lookAt + focal plane so
+      // s2wInto remains accurate with the new camera direction.
+      camera.position.lerp(CAM_POSITIONS[ki]!, 0.04);
+      camera.lookAt(0, 0, 0);
+      camera.updateMatrixWorld();
+      camera.getWorldDirection(_camDir);
+      focalPlane.setFromNormalAndCoplanarPoint(_camDir, new THREE.Vector3(0, 0, 0));
 
       // Option B scroll-relative targeting for KF 1 + KF 2:
       // target Y = (sectionTop + offset) / viewportHeight each frame.
@@ -277,17 +391,20 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
       if (ki === 1 && section2Ref.current) {
         const s2Top = section2Ref.current.getBoundingClientRect().top;
         const ih    = window.innerHeight;
-        // Orbital center ≈ section top + 450px (half of 900px orbital container)
         const yFrac = (s2Top + 450) / ih;
         s2wInto(0.73, yFrac, _dynPos);
         targetPos = _dynPos;
       } else if (ki === 2 && section3Ref.current) {
         const s3Top = section3Ref.current.getBoundingClientRect().top;
         const ih    = window.innerHeight;
-        // Title center ≈ section top + 310px (100px padding + ~half-title height)
         const yFrac = (s3Top + 310) / ih;
         s2wInto(0.60, yFrac, _dynPos);
         targetPos = _dynPos;
+      } else if (ki === 3) {
+        // Always use shatterLockPos — set at entry from KF3 camera perspective
+        if (shatterLockPos) targetPos = shatterLockPos;
+      } else if (ki === 4) {
+        if (floorLockPos) targetPos = floorLockPos;
       }
 
       // Smooth lerp toward target (position settles fast; scale/light slower)
@@ -330,6 +447,238 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
         moveIdle = 0;
       }
 
+      // ── KF transition detection ───────────────────────────────────────────────
+      // IMPORTANT: exits must run before entries — entries snapshot rubik child
+      // positions as restPos, so they must see the assembled state, not scattered.
+      const kiChanged = ki !== prevKI;
+      if (kiChanged) {
+
+        // ── Exits ────────────────────────────────────────────────────────────────
+        if (prevKI === 0 && ki !== 0) {
+          // Snap immediately to grid + reset rotations from any face turns
+          for (const hc of heroCubies) {
+            hc.group.position.copy(hc.gridPos);
+            hc.group.rotation.set(0, 0, 0);
+          }
+          heroPhase = 'scattered';
+        }
+        if (prevKI === 3 && ki !== 3) {
+          // Leaving Care Network — snap pieces back, reset for re-entry
+          for (const sc of shatterCubies) sc.group.position.copy(sc.restPos);
+          shatterPhase      = 'idle';
+          shatterLockPos    = null;
+          shatterCubies     = [];
+          assembleTimer     = 0;
+          scatterHoldTimer  = 0;
+          shatterElapsed    = 0;
+          reassembleElapsed = 0;
+        }
+        if (prevKI === 4 && ki !== 4) {
+          // Leaving testimonials — snap pieces back, reset for re-entry
+          for (const fc of floorCubies) fc.group.position.copy(fc.restPos);
+          floorPhase     = 'idle';
+          floorLockPos   = null;
+          floorCubies    = [];
+          floorHoldTimer = 0;
+          floorElapsed   = 0;
+        }
+
+        // ── Entries ──────────────────────────────────────────────────────────────
+        if (ki === 0 && prevKI !== 0) {
+          // Returning to hero — recompute scatter from current positions and scatter out
+          for (const hc of heroCubies) {
+            const cur = hc.group.position.clone();
+            const dir = cur.clone();
+            if (dir.lengthSq() < 0.001) dir.set(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5);
+            dir.normalize();
+            const dist = 1.0 + Math.random() * 1.4;
+            hc.scatterPos.set(
+              cur.x + dir.x * dist + (Math.random()-0.5) * 0.35,
+              cur.y + dir.y * dist + (Math.random()-0.5) * 0.35,
+              cur.z + dir.z * dist + (Math.random()-0.5) * 0.35,
+            );
+          }
+          heroPhase = 'scattering';
+        }
+        if (ki === 3 && shatterPhase === 'idle') {
+          // Snap rotation to face-front — consistent every re-entry
+          rubik.rotation.set(0.15, 0, 0);
+          // Reset all cubies to canonical positions + orientations.
+          // Face rotations in KF1 leave group.rotation non-zero; if we don't reset,
+          // stickers will face inward or pieces will appear missing after reassembly.
+          for (const hc of heroCubies) {
+            hc.group.position.copy(hc.gridPos);
+            hc.group.rotation.set(0, 0, 0);
+          }
+          // Lock position using KF3 camera perspective
+          {
+            const savedCam = camera.position.clone();
+            camera.position.copy(CAM_POSITIONS[3]!);
+            camera.lookAt(0, 0, 0);
+            camera.updateMatrixWorld();
+            camera.getWorldDirection(_camDir);
+            focalPlane.setFromNormalAndCoplanarPoint(_camDir, new THREE.Vector3(0, 0, 0));
+            s2wInto(0.68, 0.72, _dynPos);
+            shatterLockPos = _dynPos.clone();
+            camera.position.copy(savedCam);
+            camera.lookAt(0, 0, 0);
+            camera.updateMatrixWorld();
+            camera.getWorldDirection(_camDir);
+            focalPlane.setFromNormalAndCoplanarPoint(_camDir, new THREE.Vector3(0, 0, 0));
+          }
+          // Snapshot assembled positions + prepare radial scatter targets
+          shatterCubies = (rubik.children as THREE.Group[]).map((group) => {
+            const restPos = group.position.clone();
+            const dir = restPos.clone();
+            if (dir.lengthSq() < 0.001) dir.set((Math.random()-0.5),(Math.random()-0.5),(Math.random()-0.5));
+            dir.normalize();
+            const dist = 2.2 + Math.random() * 2.8;
+            const scatterPos = new THREE.Vector3(
+              restPos.x + dir.x * dist + (Math.random()-0.5) * 0.6,
+              restPos.y + dir.y * dist + (Math.random()-0.5) * 0.6,
+              restPos.z + dir.z * dist * 0.4,
+            );
+            return { group, restPos, scatterPos,
+              delay: Math.random()*0.18, dur: 0.45+Math.random()*0.25,
+              rDelay: Math.random()*0.10, rDur: 0.55+Math.random()*0.25 };
+          });
+          shatterPhase   = 'settling';
+          assembleTimer  = 0;
+          shatterElapsed = 0;
+        }
+
+        if (ki === 4 && floorPhase === 'idle') {
+          rubik.rotation.set(0.15, 0, 0);
+          // Reset all cubies to canonical positions + orientations (same reason as KF3)
+          for (const hc of heroCubies) {
+            hc.group.position.copy(hc.gridPos);
+            hc.group.rotation.set(0, 0, 0);
+          }
+          // Lock position using KF4 camera perspective
+          {
+            const savedCam = camera.position.clone();
+            camera.position.copy(CAM_POSITIONS[4]!);
+            camera.lookAt(0, 0, 0);
+            camera.updateMatrixWorld();
+            camera.getWorldDirection(_camDir);
+            focalPlane.setFromNormalAndCoplanarPoint(_camDir, new THREE.Vector3(0, 0, 0));
+            s2wInto(0.28, 0.42, _dynPos);
+            floorLockPos = _dynPos.clone();
+            camera.position.copy(savedCam);
+            camera.lookAt(0, 0, 0);
+            camera.updateMatrixWorld();
+            camera.getWorldDirection(_camDir);
+            focalPlane.setFromNormalAndCoplanarPoint(_camDir, new THREE.Vector3(0, 0, 0));
+          }
+          const FLOOR_Y = -1.8;
+          floorCubies = (rubik.children as THREE.Group[]).map((group) => {
+            const restPos = group.position.clone();
+            const scatterPos = new THREE.Vector3(
+              restPos.x + (Math.random()-0.5) * 5.0,
+              FLOOR_Y + (Math.random()-0.5) * 0.10,
+              restPos.z + (Math.random()-0.5) * 0.6,
+            );
+            return { group, restPos, scatterPos, delay: Math.random()*0.25, dur: 0.55+Math.random()*0.35 };
+          });
+          floorPhase     = 'settling';
+          floorHoldTimer = 0;
+          floorElapsed   = 0;
+        }
+
+        prevKI = ki;
+      }
+
+      // ── Hero scatter tick — only runs in KF0 ─────────────────────────────────
+      if (ki === 0 && heroPhase === 'scattering') {
+        let done = true;
+        for (const hc of heroCubies) {
+          hc.group.position.lerp(hc.scatterPos, 0.07);
+          if (hc.group.position.distanceTo(hc.scatterPos) > 0.008) done = false;
+        }
+        if (done) { for (const hc of heroCubies) hc.group.position.copy(hc.scatterPos); heroPhase = 'scattered'; }
+      }
+
+      // ── Explode + reassemble animation tick ──────────────────────────────────
+      if (ki === 3) {
+        if (shatterPhase === 'settling') {
+          // Wait until cube has physically arrived before starting animation
+          if (shatterLockPos && rubik.position.distanceTo(shatterLockPos) < SETTLE_DIST) {
+            shatterPhase = 'assembled';
+          }
+        } else if (shatterPhase === 'assembled') {
+          assembleTimer += delta;
+          if (assembleTimer >= ASSEMBLE_HOLD) { shatterPhase = 'exploding'; shatterElapsed = 0; }
+
+        } else if (shatterPhase === 'exploding') {
+          shatterElapsed += delta;
+          let allDone = true;
+          for (const sc of shatterCubies) {
+            const t = (shatterElapsed - sc.delay) / sc.dur;
+            if (t < 1) allDone = false;
+            if (t <= 0) continue;
+            sc.group.position.lerpVectors(sc.restPos, sc.scatterPos, easeOut(Math.min(t, 1)));
+          }
+          if (allDone) { shatterPhase = 'scatterHold'; scatterHoldTimer = 0; }
+
+        } else if (shatterPhase === 'scatterHold') {
+          scatterHoldTimer += delta;
+          if (scatterHoldTimer >= SCATTER_HOLD) {
+            // Re-randomize scatter targets so each loop looks different
+            for (const sc of shatterCubies) {
+              const dir = sc.restPos.clone();
+              if (dir.lengthSq() < 0.001) dir.set((Math.random()-0.5),(Math.random()-0.5),(Math.random()-0.5));
+              dir.normalize();
+              const dist = 2.2 + Math.random() * 2.8;
+              sc.scatterPos.set(
+                sc.restPos.x + dir.x * dist + (Math.random()-0.5) * 0.6,
+                sc.restPos.y + dir.y * dist + (Math.random()-0.5) * 0.6,
+                sc.restPos.z + dir.z * dist * 0.4,
+              );
+              sc.rDelay = Math.random() * 0.10;
+              sc.rDur   = 0.55 + Math.random() * 0.25;
+            }
+            shatterPhase = 'reassembling'; reassembleElapsed = 0;
+          }
+
+        } else if (shatterPhase === 'reassembling') {
+          reassembleElapsed += delta;
+          let allDone = true;
+          for (const sc of shatterCubies) {
+            const t = (reassembleElapsed - sc.rDelay) / sc.rDur;
+            if (t < 1) allDone = false;
+            if (t <= 0) continue;
+            sc.group.position.lerpVectors(sc.scatterPos, sc.restPos, eio(Math.min(t, 1)));
+          }
+          if (allDone) {
+            // Snap all to exact rest positions, then loop back
+            for (const sc of shatterCubies) sc.group.position.copy(sc.restPos);
+            shatterPhase  = 'assembled';
+            assembleTimer = 0;
+          }
+        }
+      }
+
+      // ── Floor-scatter tick (KF 4 — Testimonials) ─────────────────────────────
+      if (ki === 4) {
+        if (floorPhase === 'settling') {
+          if (floorLockPos && rubik.position.distanceTo(floorLockPos) < SETTLE_DIST) {
+            floorPhase = 'assembled';
+          }
+        } else if (floorPhase === 'assembled') {
+          floorHoldTimer += delta;
+          if (floorHoldTimer >= ASSEMBLE_HOLD) { floorPhase = 'shattering'; floorElapsed = 0; }
+        } else if (floorPhase === 'shattering') {
+          floorElapsed += delta;
+          let allDone = true;
+          for (const fc of floorCubies) {
+            const t = (floorElapsed - fc.delay) / fc.dur;
+            if (t < 1) allDone = false;
+            if (t <= 0) continue;
+            fc.group.position.lerpVectors(fc.restPos, fc.scatterPos, easeOut(Math.min(t, 1)));
+          }
+          if (allDone) floorPhase = 'done';
+        }
+      }
 
       if (!kf.rc) {
         // Sticker blip (hero + orbital)
@@ -379,6 +728,9 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref }: Props) {
       KFS[0]!.pos.copy(s2w(0.50, 0.05));
       KFS[1]!.pos.copy(s2w(0.73, 0.50));
       KFS[2]!.pos.copy(s2w(0.74, 0.30));
+      KFS[3]!.pos.copy(s2w(0.68, 0.82));
+      KFS[4]!.pos.copy(s2w(0.28, 0.40));
+      KFS[5]!.pos.copy(s2w(0.22, 0.58));
     };
     window.addEventListener('resize', onResize);
 

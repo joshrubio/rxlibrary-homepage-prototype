@@ -136,44 +136,51 @@ const BENTO_GRADIENTS = [
 
 const BRAND_CARDS = [
   {
+    // Techy quirky geometric — distinct from classic rounded sans
     label: 'PharmacyTime', lines: ['Pharmacy', 'Time'],
     bg: 'linear-gradient(160deg,#FEC944 0%,#E09900 100%)', dark: true,
-    fonts: ['Poppins', 'Inter', 'Lato', 'Nunito'], activeFont: 0,
+    fonts: ['Space Grotesk', 'Poppins', 'Outfit', 'Nunito'], activeFont: 0,
     layout: 'Rounded',
     colors: ['#A855F7', '#1E1E1E'],
   },
   {
+    // Tall elegant geometric with wide tracking — distinct proportions
     label: 'HeyTides', lines: ['Hey', 'Tides'],
     bg: 'linear-gradient(160deg,#0B3D5E 0%,#1565A0 100%)', dark: false,
-    fonts: ['Montserrat', 'DM Sans', 'Nunito'], activeFont: 0,
+    fonts: ['Raleway', 'Montserrat', 'DM Sans'], activeFont: 0,
     layout: 'Classic',
     colors: ['#F97316', '#0B3D5E'],
   },
   {
+    // Monospace — ultra-distinct, clinical/techy, unlike any other card
     label: 'CliniqFlow', lines: ['Cliniq', 'Flow'],
     bg: 'linear-gradient(160deg,#7C6FFF 0%,#5048CC 100%)', dark: false,
-    fonts: ['Plus Jakarta', 'Manrope', 'Outfit'], activeFont: 0,
+    fonts: ['IBM Plex Mono', 'Manrope', 'Outfit'], activeFont: 0,
     layout: 'Rounded',
     colors: ['#7C6FFF', '#F0EDFF'],
   },
   {
+    // Optical serif with organic warmth — clear serif contrast vs sans cards
     label: 'VitaRx', lines: ['Vita', 'Rx'],
     bg: 'linear-gradient(160deg,#10B981 0%,#059669 100%)', dark: false,
-    fonts: ['Geist', 'Work Sans', 'Rubik', 'Inter'], activeFont: 0,
+    fonts: ['Fraunces', 'Lora', 'Merriweather'], activeFont: 0,
     layout: 'Classic',
     colors: ['#10B981', '#064E3B'],
   },
   {
+    // Ultra-condensed display — completely different proportions, very impactful
     label: 'MedFlow', lines: ['Med', 'Flow'],
     bg: 'linear-gradient(160deg,#18102B 0%,#2D1A4A 100%)', dark: false,
-    fonts: ['Satoshi', 'Neue Haas', 'Outfit'], activeFont: 0,
+    fonts: ['Bebas Neue', 'Barlow Condensed', 'Oswald'], activeFont: 0,
     layout: 'Classic',
     colors: ['#E94560', '#18102B'],
+    titleSize: 56,
   },
   {
+    // High-contrast transitional serif — luxury editorial, unmistakably different
     label: 'PureHealth', lines: ['Pure', 'Health'],
     bg: 'linear-gradient(160deg,#F0EDFF 0%,#E4DEFF 100%)', dark: true,
-    fonts: ['Lora', 'Cormorant', 'Fraunces', 'Garamond'], activeFont: 1,
+    fonts: ['Playfair Display', 'Cormorant Garamond', 'Fraunces'], activeFont: 0,
     layout: 'Rounded',
     colors: ['#06B6D4', '#F0EDFF'],
   },
@@ -183,44 +190,44 @@ const BRAND_CARDS = [
 
 const CARE_CARDS = [
   {
-    title: '10,000+ Licensed Providers',
-    description: 'Physicians and nurse practitioners credentialed across every state, ready to see patients from day one — no recruiting required.',
+    title: '10,000+ Credentialed Clinicians',
+    description: 'Board-certified physicians and NPs — fully credentialed, state-licensed, and DEA-registered. No recruiting. No paperwork. Inherited on day one.',
     icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
   },
   {
-    title: 'All 50 States. No Exceptions.',
-    description: 'Every state is fully staffed with licensed, credentialed providers. No geographic gaps, no holdups, no workarounds.',
+    title: 'All 50 States. No Gaps.',
+    description: 'Every state is covered with licensed, credentialed clinicians. Geographic restrictions never block a patient from care.',
     icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',
   },
   {
-    title: 'DEA-Registered Across the Board',
-    description: 'Every provider holds active DEA registration, covering controlled substance prescriptions without additional compliance overhead.',
+    title: 'Real Partner Pharmacies',
+    description: 'Dispensing through licensed, accredited compounding and retail pharmacies — not fulfillment abstractions. Every script routes to a real pharmacy.',
+    icon: 'M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18',
+  },
+  {
+    title: 'HIPAA-Compliant Labs',
+    description: 'Integrated diagnostic lab partners operate under full HIPAA compliance. Requisitions, results, and PHI handled end-to-end within the network.',
     icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4',
   },
   {
-    title: 'Zero Credentialing Work',
-    description: "We've done the credentialing. You inherit a fully verified, compliant provider network on day one — no paperwork, no delays.",
-    icon: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3',
+    title: 'DEA-Registered Network',
+    description: 'Active DEA registration across the provider base. Controlled substance prescriptions covered without building your own compliance layer.',
+    icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M8 11h8M8 15h5',
   },
   {
     title: 'Multi-Specialty Coverage',
-    description: 'Weight management, hormone therapy, men\'s health, dermatology, hair loss, and six more specialties — one network, all categories.',
+    description: 'Weight management, hormone therapy, men\'s health, dermatology, hair loss, and more — one network, every category your product needs.',
     icon: 'M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
   },
   {
-    title: 'Async-Ready Providers',
-    description: 'Providers support asynchronous intake flows. Patients submit, providers review and prescribe on a structured schedule.',
+    title: 'Async & Sync Visits',
+    description: 'Providers handle both structured async intakes and live synchronous consults. You define the flow — the network supports both.',
     icon: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
   },
   {
-    title: 'Same-Day Consultations',
-    description: 'Providers available for same-day and next-day appointments across time zones. No waitlists, no patient drop-off.',
-    icon: 'M13 2 3 14h9l-1 8 10-12h-9l1-8z',
-  },
-  {
-    title: 'Always On Coverage',
-    description: 'Round-the-clock provider availability across time zones — no patient waits for care, no matter when they reach out.',
-    icon: 'M22 12h-4l-3 9L9 3l-3 9H2',
+    title: 'Zero Credentialing Overhead',
+    description: 'Every clinician in the network is already verified, insured, and compliant. You ship — we maintain the credentials.',
+    icon: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3',
   },
 ];
 
@@ -372,6 +379,9 @@ export default function HomePage() {
   const heroSectionRef  = useRef<HTMLElement>(null);
   const orbitSectionRef = useRef<HTMLElement>(null);
   const section3Ref     = useRef<HTMLElement>(null);
+  const section4Ref     = useRef<HTMLElement>(null);
+  const section5Ref     = useRef<HTMLElement>(null);
+  const footerRef       = useRef<HTMLElement>(null);
   const careBentoRef    = useRef<HTMLDivElement>(null);
 
   // Blink energy stroke across Care Network bento cards — direct DOM, no re-render
@@ -423,6 +433,21 @@ export default function HomePage() {
   return (
     <div style={{ background: '#080808', minHeight: '100vh' }}>
       <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Raleway:wght@700;800;900&family=IBM+Plex+Mono:wght@700&family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Bebas+Neue&family=Playfair+Display:wght@700;800;900&family=Cormorant+Garamond:wght@700&family=Poppins:wght@700;800;900&family=Outfit:wght@700;800;900&family=Nunito:wght@700;800;900&family=Montserrat:wght@700;800;900&family=DM+Sans:wght@700;800;900&family=Manrope:wght@700;800;900&family=Lora:wght@700&family=Merriweather:wght@700;900&family=Barlow+Condensed:wght@700;800;900&family=Oswald:wght@700&display=swap');
+
+        @keyframes palette-blip {
+          0%, 100% { color: #FEC944; }
+          17%      { color: #7C6FFF; }
+          33%      { color: #4CAAFF; }
+          50%      { color: #10B981; }
+          67%      { color: #E94560; }
+          83%      { color: #7B2FBE; }
+        }
+        .palette-blip {
+          animation: palette-blip 10s ease-in-out infinite;
+          display: inline;
+        }
+
         @keyframes floatY {
           0%, 100% { transform: translateY(0px); }
           50%       { transform: translateY(-9px); }
@@ -440,11 +465,11 @@ export default function HomePage() {
         }
         @keyframes bento-pulse {
           0%, 100% {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-            border-color: #EBEBEB;
+            box-shadow: 8px 8px 22px rgba(13,39,80,0.16), -6px -6px 18px rgba(255,255,255,0.72);
+            border-color: transparent;
           }
           35%, 65% {
-            box-shadow: 0 0 0 2px rgba(212,160,23,0.6), 0 0 28px rgba(212,160,23,0.28), inset 0 0 12px rgba(212,160,23,0.07);
+            box-shadow: 8px 8px 22px rgba(13,39,80,0.16), -6px -6px 18px rgba(255,255,255,0.72), 0 0 0 2px rgba(212,160,23,0.6), 0 0 28px rgba(212,160,23,0.28);
             border-color: rgba(212,160,23,0.85);
           }
         }
@@ -465,175 +490,99 @@ export default function HomePage() {
         heroRef={heroSectionRef}
         section2Ref={orbitSectionRef}
         section3Ref={section3Ref}
+        section4Ref={section4Ref}
+        section5Ref={section5Ref}
+        footerRef={footerRef}
       />
 
       {/* ── Nav ────────────────────────────────────────────────────────────────── */}
       <MarketingNav isLoggedIn={isLoggedIn} dashboardHref={roleHome.href} />
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section ref={heroSectionRef} style={{ position: 'relative', height: '100dvh', minHeight: 600, overflow: 'hidden' }}>
+      <section ref={heroSectionRef} style={{
+        position: 'relative', height: '100dvh', minHeight: 600, overflow: 'hidden',
+        background: '#1A1A1C',
+      }}>
 
         {/* Yellow radial glow */}
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute',
-            top: '-22%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '72vw',
-            height: '72vw',
-            background: 'radial-gradient(circle, rgba(212,160,23,0.13) 0%, rgba(212,160,23,0.04) 45%, transparent 70%)',
-            pointerEvents: 'none',
-            zIndex: 1,
-          }}
-        />
+        <div aria-hidden style={{
+          position: 'absolute', top: '-22%', left: '50%', transform: 'translateX(-50%)',
+          width: '72vw', height: '72vw',
+          background: 'radial-gradient(circle, rgba(212,160,23,0.16) 0%, rgba(212,160,23,0.05) 45%, transparent 70%)',
+          pointerEvents: 'none', zIndex: 1,
+        }} />
 
         {/* Floating badge chips — hidden */}
         {false && BADGES.map((b) => (
-          <div
-            key={b.text}
-            className="hero-badge"
-            style={{
-              position: 'absolute',
-              top: b.top,
-              ...(b.side === 'left'
-                ? { left: 'clamp(16px, 6vw, 80px)' }
-                : { right: 'clamp(16px, 6vw, 80px)' }),
-              zIndex: 10,
-              animationDelay: b.delay,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '9px 14px',
-              borderRadius: 14,
-              background: 'rgba(20,20,20,0.75)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.45)',
-            }}
-          >
+          <div key={b.text} className="hero-badge" style={{
+            position: 'absolute', top: b.top,
+            ...(b.side === 'left' ? { left: 'clamp(16px, 6vw, 80px)' } : { right: 'clamp(16px, 6vw, 80px)' }),
+            zIndex: 10, animationDelay: b.delay,
+            display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderRadius: 14,
+            background: 'rgba(20,20,20,0.75)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.45)',
+          }}>
             <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{b.icon}</span>
             <div>
-              <p style={{ color: 'rgba(255,255,255,0.92)', fontSize: 12, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
-                {b.text}
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 10, margin: 0, marginTop: 2, lineHeight: 1 }}>
-                {b.sub}
-              </p>
+              <p style={{ color: 'rgba(255,255,255,0.92)', fontSize: 12, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>{b.text}</p>
+              <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 10, margin: 0, marginTop: 2, lineHeight: 1 }}>{b.sub}</p>
             </div>
           </div>
         ))}
 
-        {/* Bottom gradient fade */}
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '38%',
-            background: 'linear-gradient(to top, #080808 0%, transparent 100%)',
-            zIndex: 5,
-            pointerEvents: 'none',
-          }}
-        />
+        {/* Bottom gradient fade — matches dark base */}
+        <div aria-hidden style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '38%',
+          background: 'linear-gradient(to top, #1A1A1C 0%, transparent 100%)',
+          zIndex: 5, pointerEvents: 'none',
+        }} />
 
-        {/* Text + CTA — staggered fade-slide-in per element */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            left: 0,
-            right: 0,
-            zIndex: 10,
-            textAlign: 'center',
-            padding: '0 24px',
-          }}
-        >
-          {/* Headline */}
-          <h1
-            className="hero-in"
-            style={{
-              color: '#FFFFFF',
-              fontSize: 'clamp(34px, 5.5vw, 68px)',
-              fontWeight: 800,
-              lineHeight: 1.05,
-              letterSpacing: '-0.03em',
-              margin: '0 auto',
-              maxWidth: 720,
-              animationDelay: '0.38s',
-            }}
-          >
+        {/* Text + CTA */}
+        <div style={{
+          position: 'absolute', top: '50%', transform: 'translateY(-50%)',
+          left: 0, right: 0, zIndex: 10, textAlign: 'center', padding: '0 24px',
+        }}>
+          <h1 className="hero-in" style={{
+            color: '#FFFFFF',
+            fontSize: 'clamp(34px, 5.5vw, 68px)',
+            fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.03em',
+            margin: '0 auto', maxWidth: 720, animationDelay: '0.38s',
+          }}>
             The operating system for modern healthcare distribution.
           </h1>
 
-          {/* Subtitle */}
-          <p
-            className="hero-in"
-            style={{
-              color: 'rgba(255,255,255,0.45)',
-              fontSize: 'clamp(14px, 1.8vw, 17px)',
-              marginTop: 16,
-              marginBottom: 32,
-              maxWidth: 480,
-              marginLeft: 'auto',
-              marginRight: 'auto',
-              lineHeight: 1.6,
-              animationDelay: '0.55s',
-            }}
-          >
+          <p className="hero-in" style={{
+            color: 'rgba(255,255,255,0.42)',
+            fontSize: 'clamp(14px, 1.8vw, 17px)',
+            marginTop: 16, marginBottom: 36,
+            maxWidth: 480, marginLeft: 'auto', marginRight: 'auto',
+            lineHeight: 1.6, animationDelay: '0.55s',
+          }}>
             From ICHRA to telemedicine to pharmacy fulfillment, RX Library enables organizations to deploy healthcare experiences at enterprise scale.
           </p>
 
-          {/* CTAs */}
-          <div
-            className="hero-in"
-            style={{
-              display: 'flex',
-              gap: 12,
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              animationDelay: '0.72s',
-            }}
-          >
-            {/* Login — phantom glass */}
-            <Link
-              href="/login"
-              style={{
-                padding: '11px 28px',
-                borderRadius: 10,
-                fontWeight: 600,
-                fontSize: 15,
-                textDecoration: 'none',
-                display: 'inline-block',
-                color: 'rgba(255,255,255,0.75)',
-                border: '1px solid rgba(255,255,255,0.18)',
-                background: 'rgba(255,255,255,0.06)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-              }}
-            >
+          <div className="hero-in" style={{
+            display: 'flex', gap: 14, justifyContent: 'center',
+            alignItems: 'center', flexWrap: 'wrap', animationDelay: '0.72s',
+          }}>
+            {/* Login — dark neumorphic raised */}
+            <Link href="/login" style={{
+              padding: '12px 30px', borderRadius: 12,
+              fontWeight: 600, fontSize: 15, textDecoration: 'none', display: 'inline-block',
+              color: 'rgba(255,255,255,0.65)',
+              background: '#1F1F22',
+              boxShadow: '8px 8px 22px rgba(0,0,0,0.55), -5px -5px 14px rgba(255,255,255,0.05)',
+              border: 'none',
+            }}>
               Login
             </Link>
-            {/* Book a demo — yellow */}
-            <a
-              href="/demo"
-              style={{
-                padding: '12px 28px',
-                borderRadius: 10,
-                fontWeight: 700,
-                fontSize: 15,
-                textDecoration: 'none',
-                display: 'inline-block',
-                background: '#D4A017',
-                color: '#1A1200',
-              }}
-            >
+            {/* Book a demo — yellow neumorphic */}
+            <a href="/demo" style={{
+              padding: '12px 30px', borderRadius: 12,
+              fontWeight: 700, fontSize: 15, textDecoration: 'none', display: 'inline-block',
+              background: '#D4A017', color: '#1A1200',
+              boxShadow: '8px 8px 22px rgba(0,0,0,0.50), -5px -5px 14px rgba(255,255,255,0.05)',
+            }}>
               Book a demo →
             </a>
           </div>
@@ -648,7 +597,7 @@ export default function HomePage() {
             padding: '48px 24px',
             borderTop: '1px solid rgba(255,255,255,0.06)',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
-            background: '#0C0C0C',
+            background: '#1A1A1C',
             textAlign: 'center',
           }}
         >
@@ -716,10 +665,9 @@ export default function HomePage() {
               #909090 0%,
               #b8b8b8 12%,
               #d4d4d4 26%,
-              #e8e8e8 40%,
-              #f4f4f4 58%,
-              #fafafa 72%,
-              #ffffff 88%
+              #e2e4e6 40%,
+              #E8EAEC 58%,
+              #E8EAEC 100%
             )`,
             padding: '0 0 140px', position: 'relative', overflow: 'hidden',
           }}
@@ -739,16 +687,15 @@ export default function HomePage() {
             gridTemplateRows: 'repeat(4, 1fr)',
             gap: 16,
             padding: 16,
-            opacity: 0.45,
+            opacity: 0.72,
             pointerEvents: 'none',
             zIndex: 0,
           }}>
             {Array.from({ length: 16 }).map((_, i) => (
               <div key={i} style={{
                 borderRadius: 28,
-                background: '#E8E8E8',
-                border: '1.5px solid #D4D4D4',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',
+                background: '#E8EAEC',
+                boxShadow: '10px 10px 28px rgba(13,39,80,0.16), -10px -10px 28px rgba(255,255,255,0.92)',
               }} />
             ))}
           </div>
@@ -760,9 +707,9 @@ export default function HomePage() {
               /* top edge fade — matches section's grey start colour */
               'linear-gradient(to bottom, #909090 0%, rgba(144,144,144,0) 10%)',
               /* bottom edge fade */
-              'linear-gradient(to top,   #ffffff 0%, rgba(255,255,255,0) 10%)',
+              'linear-gradient(to top,   #E8EAEC 0%, rgba(232,234,236,0) 10%)',
               /* radial halo behind the copy column — cards still peek left */
-              'radial-gradient(ellipse 48% 70% at 22% 50%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.45) 40%, rgba(255,255,255,0) 70%)',
+              'radial-gradient(ellipse 48% 70% at 22% 50%, rgba(232,234,236,0.72) 0%, rgba(232,234,236,0.45) 40%, rgba(232,234,236,0) 70%)',
             ].join(', '),
             pointerEvents: 'none',
             zIndex: 1,
@@ -777,7 +724,7 @@ export default function HomePage() {
                   Platform Architecture
                 </p>
                 <h2 style={{ fontSize: 'clamp(30px, 3.5vw, 50px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-0.03em', color: '#111', marginBottom: 20 }}>
-                  One platform.<br />Every stakeholder.<br />Every workflow.
+                  <span style={{ color: '#FEC944' }}>One platform.</span><br />Every stakeholder.<br />Every workflow.
                 </h2>
                 <p style={{ fontSize: 16, lineHeight: 1.75, color: '#666', marginBottom: 36 }}>
                   RX Library orchestrates the full care chain — employer benefits, provider consultations,
@@ -850,52 +797,25 @@ export default function HomePage() {
                     animation: 'node-in 0.55s cubic-bezier(0.22,1,0.36,1) both',
                     animationDelay: `${0.1 + i * 0.07}s`,
                     borderRadius: 22,
-                    overflow: 'hidden',           /* clips inner image to outer radius */
-                    outline: '3px solid rgba(255,255,255,0.92)',
-                    outlineOffset: 0,
-                    boxShadow: [
-                      '0 2px 0 3px rgba(0,0,0,0.07)',
-                      '0 16px 48px rgba(0,0,0,0.32)',
-                      '0 4px 12px rgba(0,0,0,0.16)',
-                    ].join(', '),
                   }}>
-                    {/* Inner card */}
+                    {/* Inner card — black */}
                     <div style={{
                       width: 116,
                       borderRadius: 20,
-                      border: '1px solid rgba(255,255,255,0.12)',
+                      background: '#1C1C1E',
+                      boxShadow: '8px 8px 20px rgba(0,0,0,0.55), -8px -8px 20px rgba(255,255,255,0.06)',
                       padding: '16px 12px 14px',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
                       gap: 9,
-                      position: 'relative',
-                      overflow: 'hidden',
                     }}>
-                      {/* Blurred image layer — scale(1.15) hides blur edge artifacts */}
-                      <div style={{
-                        position: 'absolute', inset: 0,
-                        background: `url('/bento/${(i % 4) + 1}.jpg') center/cover, ${BENTO_GRADIENTS[i % 4]}`,
-                        filter: 'blur(14px)',
-                        transform: 'scale(1.15)',
-                        borderRadius: 20,
-                      }} />
-                      {/* Dark frost overlay */}
-                      <div style={{
-                        position: 'absolute', inset: 0,
-                        background: 'rgba(8,8,8,0.52)',
-                        borderRadius: 20,
-                      }} />
                       {/* Icon circle */}
                       <div style={{
-                        position: 'relative', zIndex: 1,
                         width: 40, height: 40, borderRadius: 12,
-                        background: 'rgba(255,255,255,0.10)',
-                        backdropFilter: 'blur(10px)',
-                        WebkitBackdropFilter: 'blur(10px)',
-                        border: 'none',
+                        background: '#1C1C1E',
+                        boxShadow: 'inset 4px 4px 8px rgba(0,0,0,0.45), inset -4px -4px 8px rgba(255,255,255,0.05)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: 'none',
                       }}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                           stroke={accent} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -903,9 +823,9 @@ export default function HomePage() {
                         </svg>
                       </div>
                       {/* Text */}
-                      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.92)', margin: 0, lineHeight: 1.25 }}>{label}</p>
-                        <p style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.42)', margin: 0, marginTop: 2, lineHeight: 1 }}>{sub}</p>
+                      <div style={{ textAlign: 'center' }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.88)', margin: 0, lineHeight: 1.25 }}>{label}</p>
+                        <p style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.38)', margin: 0, marginTop: 2, lineHeight: 1 }}>{sub}</p>
                       </div>
                     </div>
                   </div>
@@ -918,7 +838,7 @@ export default function HomePage() {
 
 
         {/* ── Section 3: White Label ───────────────────────────────────────────── */}
-        <section ref={section3Ref} style={{ background: '#ffffff', padding: '0 0 100px', overflow: 'hidden', position: 'relative' }}>
+        <section ref={section3Ref} style={{ background: '#E8EAEC', padding: '0 0 200px', overflow: 'hidden', position: 'relative' }}>
 
           {/* Two-col header: left = copy (above canvas), right = empty cube space (behind canvas) */}
           <div style={{ maxWidth: 1280, margin: '0 auto', padding: '100px 64px 60px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
@@ -931,7 +851,7 @@ export default function HomePage() {
                     White Label
                   </p>
                   <h2 style={{ fontSize: 'clamp(32px, 4vw, 54px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-0.03em', color: '#111', marginBottom: 16 }}>
-                    Your brand.<br />Your experience.<br />Live in days.
+                    <span className="palette-blip">Your brand.</span><br />Your experience.<br />Live in days.
                   </h2>
                   <p style={{ fontSize: 16, lineHeight: 1.7, color: '#888', maxWidth: 460 }}>
                     Give your patients a healthcare experience that feels entirely yours. RX Library runs underneath, invisibly.
@@ -980,8 +900,8 @@ export default function HomePage() {
 
                 const hex    = card.colors[0]!;
                 const accent = hex;                             // brand name
-                const tcDim    = 'rgba(255,255,255,0.32)';      // eyebrow / secondary
-                const tcMuted  = 'rgba(255,255,255,0.18)';      // inactive pills
+                const tcDim    = 'rgba(0,0,0,0.45)';            // eyebrow / secondary
+                const tcMuted  = 'rgba(0,0,0,0.22)';            // inactive pills
 
                 return (
                   <div key={card.label} style={{
@@ -989,9 +909,9 @@ export default function HomePage() {
                     left: '50%', top: '50%',
                     width: 230, height: 390,
                     marginLeft: -115, marginTop: -195,
-                    borderRadius: 9,
-                    background: '#0D0D0D',
-                    boxShadow: '0 32px 72px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.30)',
+                    borderRadius: 24,
+                    background: '#E8EAEC',
+                    boxShadow: '28px 28px 50px rgba(13,39,80,0.22), -23px -23px 45px rgba(255,255,255,1.0)',
                     transform: `translateX(${TX}px) rotateY(${RY}deg) translateZ(${TZ}px) scale(${SC})`,
                     opacity: OP,
                     zIndex: ZI,
@@ -1015,7 +935,7 @@ export default function HomePage() {
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', marginBottom: 4 }}>
                       {card.lines.map((line: string, li: number) => (
                         <p key={li} style={{
-                          fontSize: 36, fontWeight: 900, color: accent,
+                          fontSize: (card as { titleSize?: number }).titleSize ?? 36, fontWeight: 900, color: accent,
                           margin: 0, lineHeight: 1, letterSpacing: '-0.04em',
                           fontFamily: `${card.fonts[card.activeFont]}, sans-serif`,
                           whiteSpace: 'nowrap', overflow: 'hidden',
@@ -1028,7 +948,7 @@ export default function HomePage() {
                     {/* Divider */}
                     <div style={{
                       height: 1,
-                      background: 'rgba(255,255,255,0.10)',
+                      background: 'rgba(0,0,0,0.08)',
                       margin: '12px 0 10px',
                     }} />
 
@@ -1037,9 +957,9 @@ export default function HomePage() {
                       {card.fonts.map((font: string, fi: number) => (
                         <span key={font} style={{
                           fontSize: 8, fontWeight: 600, padding: '2.5px 6px', borderRadius: 5,
-                          background: fi === card.activeFont ? 'rgba(255,255,255,0.08)' : 'transparent',
+                          background: fi === card.activeFont ? 'rgba(0,0,0,0.07)' : 'transparent',
                           border: fi === card.activeFont
-                            ? '1px solid rgba(255,255,255,0.18)'
+                            ? '1px solid rgba(0,0,0,0.14)'
                             : '1px solid transparent',
                           color: fi === card.activeFont ? accent : tcMuted,
                         }}>
@@ -1056,9 +976,9 @@ export default function HomePage() {
                         {(['Rounded', 'Classic'] as const).map(opt => (
                           <span key={opt} style={{
                             fontSize: 7.5, fontWeight: 700, padding: '2px 6px', borderRadius: 4,
-                            background: opt === card.layout ? 'rgba(255,255,255,0.08)' : 'transparent',
+                            background: opt === card.layout ? 'rgba(0,0,0,0.07)' : 'transparent',
                             border: opt === card.layout
-                              ? '1px solid rgba(255,255,255,0.18)'
+                              ? '1px solid rgba(0,0,0,0.14)'
                               : '1px solid transparent',
                             color: opt === card.layout ? accent : tcMuted,
                           }}>
@@ -1073,7 +993,7 @@ export default function HomePage() {
                           <div key={swatchHex} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                             <div style={{
                               width: 11, height: 11, borderRadius: 3, background: swatchHex,
-                              border: '1px solid rgba(255,255,255,0.12)',
+                              border: '1px solid rgba(0,0,0,0.10)',
                               flexShrink: 0,
                             }} />
                             <span style={{ fontSize: 6.5, color: tcDim, fontFamily: 'monospace', letterSpacing: '0.01em' }}>{swatchHex}</span>
@@ -1109,13 +1029,15 @@ export default function HomePage() {
 
         {/* ── Section 4: Care Network ──────────────────────────────────────────── */}
         <section
+          ref={section4Ref}
           style={{
-            background: '#ffffff',
+            background: '#E8EAEC',
             position: 'relative',
             overflow: 'hidden',
-            minHeight: '100vh',
+            minHeight: 1050,
             display: 'grid',
             gridTemplateColumns: '1fr 800px',
+            marginTop: -1,
           }}
         >
           {/* ── Bento bg — content cards ─────────────────────────────────────────── */}
@@ -1123,22 +1045,22 @@ export default function HomePage() {
             position: 'absolute', inset: 0,
             display: 'grid',
             gridTemplateColumns: 'repeat(6, 356px)',
-            gridTemplateRows: 'repeat(4, 240px)',
+            gridTemplateRows: 'repeat(3, 240px)',
             gap: 16,
             padding: 16,
             pointerEvents: 'none',
             zIndex: 0,
           }}>
-            {Array.from({ length: 24 }).map((_, i) => {
+            {Array.from({ length: 18 }).map((_, i) => {
               const card = CARE_CARDS[i % CARE_CARDS.length]!;
               return (
                 <div key={i} style={{
                   borderRadius: 28,
-                  background: '#ffffff',
+                  background: '#E8EAEC',
                   borderWidth: '1.5px',
                   borderStyle: 'solid',
-                  borderColor: '#EBEBEB',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
+                  borderColor: 'transparent',
+                  boxShadow: '8px 8px 22px rgba(13,39,80,0.16), -6px -6px 18px rgba(255,255,255,0.72)',
                   padding: '28px 28px 32px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -1149,8 +1071,9 @@ export default function HomePage() {
                   {/* Icon badge */}
                   <div style={{
                     width: 40, height: 40, borderRadius: 12,
-                    background: '#F7F7F7',
-                    border: '1px solid #E8E8E8',
+                    background: '#E8EAEC',
+                    boxShadow: 'inset 4px 4px 8px rgba(13,39,80,0.12), inset -4px -4px 8px rgba(255,255,255,0.85)',
+                    border: 'none',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
                     marginBottom: 20,
@@ -1174,19 +1097,25 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* Left edge fade */}
-          <div aria-hidden style={{
-            position: 'absolute', left: 0, top: 0, bottom: 0, width: 140,
-            background: 'linear-gradient(to right, #ffffff 0%, transparent 100%)',
-            zIndex: 1, pointerEvents: 'none',
-          }} />
-
           {/* Right fade — below fixed canvas (z:2), above bento cards (z:0) */}
           <div aria-hidden style={{
             position: 'absolute', right: 0, top: 0, bottom: 0, width: '90%',
-            background: 'linear-gradient(to right, transparent 0%, #ffffff 70%)',
+            background: 'linear-gradient(to right, transparent 0%, #E8EAEC 70%)',
             zIndex: 1, pointerEvents: 'none',
           }} />
+
+          {/* Title radial fade — sits on its own layer between cards and cube canvas.
+              Sized to wrap the copy block: ~520px wide × 320px tall, anchored to title position. */}
+          <div aria-hidden style={{
+            position: 'absolute',
+            right: 180,   // 240px padding − 60px bleed so fade extends slightly past text edge
+            top: 40,      // 80px title padding − 40px bleed above
+            width: 580,
+            height: 360,
+            background: 'radial-gradient(ellipse 50% 50% at 55% 40%, rgba(232,234,236,0.98) 30%, transparent 100%)',
+            zIndex: 1, pointerEvents: 'none',
+          }} />
+
 
           {/* Left column spacer */}
           <div style={{ position: 'relative', zIndex: 3 }} />
@@ -1194,11 +1123,11 @@ export default function HomePage() {
           {/* Right — copy. zIndex 5 above canvas. */}
           <div style={{
             position: 'relative', zIndex: 5,
-            display: 'flex', alignItems: 'center',
-            padding: '100px 240px 100px 0px',
+            display: 'flex', alignItems: 'flex-start',
+            padding: '80px 240px 0 0',
           }}>
             <FadeUp>
-              <div style={{ textAlign: 'right' }}>
+                <div style={{ textAlign: 'right' }}>
                 <p style={{
                   color: '#D4A017', fontSize: 10, fontWeight: 800,
                   letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16,
@@ -1222,14 +1151,15 @@ export default function HomePage() {
         </section>
 
         {/* ── Placeholder — scroll buffer ──────────────────────────────────── */}
-        <section style={{ minHeight: '100vh', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+        <section style={{ minHeight: '100vh', background: '#E8EAEC', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
           <p style={{ color: '#ccc', fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Pending sections, coming soon</p>
         </section>
 
         {/* ── Section 4: Testimonials ──────────────────────────────────────── */}
         <section
+          ref={section5Ref}
           style={{
-            background: '#ffffff',
+            background: '#E8EAEC',
             position: 'relative',
             overflow: 'hidden',
             minHeight: '100vh',
@@ -1346,76 +1276,95 @@ export default function HomePage() {
         </section>
 
         {/* ── CTA + Footer ─────────────────────────────────────────────────── */}
-        <section style={{ background: '#1E1E1E' }} className="px-6 md:px-16 py-28">
-          <div className="max-w-4xl mx-auto text-center">
+        <section
+          ref={footerRef}
+          style={{ background: '#1F1F22', position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '80vh' }}
+        >
+          {/* Left — cube floats here (no z-index: canvas at z:2 paints above) */}
+          <div />
+
+          {/* Right — copy above canvas, left-aligned, vertically centered */}
+          <div style={{ position: 'relative', zIndex: 5, padding: '80px 80px 100px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', textAlign: 'left' }}>
             <FadeUp>
               {/* Compliance badges */}
-              <div className="flex flex-wrap justify-center gap-3 mb-12">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 40 }}>
                 {['HIPAA', 'SOC2', 'FHIR R4', 'API-first', 'AWS ECS Fargate', 'Enterprise-ready'].map((badge) => (
                   <div
                     key={badge}
-                    className="rounded-full px-4 py-1.5 text-xs font-bold"
-                    style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)' }}
+                    style={{
+                      borderRadius: 999, padding: '5px 14px', fontSize: 11, fontWeight: 700,
+                      color: 'rgba(255,255,255,0.35)',
+                      background: '#1F1F22',
+                      boxShadow: 'inset 3px 3px 7px rgba(0,0,0,0.45), inset -3px -3px 7px rgba(255,255,255,0.04)',
+                    }}
                   >
                     {badge}
                   </div>
                 ))}
               </div>
-              <h2
-                className="text-[clamp(32px,5vw,60px)] font-bold leading-[1.08] mb-6"
-                style={{ letterSpacing: '-0.04em', color: '#fff' }}
-              >
+
+              <h2 style={{ fontSize: 'clamp(32px, 4.5vw, 60px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-0.04em', color: '#fff', margin: '0 0 20px' }}>
                 Start Building.
               </h2>
-              <p className="text-lg mb-10 mx-auto" style={{ color: 'rgba(255,255,255,0.5)', maxWidth: '480px', lineHeight: 1.6 }}>
+              <p style={{ fontSize: 17, lineHeight: 1.65, color: 'rgba(255,255,255,0.5)', maxWidth: 420, margin: '0 0 36px' }}>
                 Deploy healthcare infrastructure for your organization. Launch in weeks, not quarters.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
                 <a
                   href="/login"
-                  className="inline-flex items-center justify-center rounded-xl text-sm font-bold px-8 py-4 transition-all"
-                  style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.12)' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'; }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: 12, fontSize: 14, fontWeight: 700, padding: '14px 32px',
+                    textDecoration: 'none', border: 'none',
+                    color: 'rgba(255,255,255,0.65)',
+                    background: '#1F1F22',
+                    boxShadow: '8px 8px 22px rgba(0,0,0,0.55), -5px -5px 14px rgba(255,255,255,0.05)',
+                  }}
                 >
                   Login
                 </a>
                 <a
                   href="/demo"
-                  className="inline-flex items-center justify-center rounded-xl text-sm font-bold px-8 py-4 transition-all"
-                  style={{ background: '#FEC944', color: '#1E1E1E' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#D4A017'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEC944'; }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: 12, fontSize: 14, fontWeight: 700, padding: '14px 32px',
+                    textDecoration: 'none',
+                    background: '#D4A017', color: '#1A1200',
+                    boxShadow: '8px 8px 22px rgba(0,0,0,0.50), -5px -5px 14px rgba(255,255,255,0.05)',
+                  }}
                 >
                   Book a demo →
                 </a>
               </div>
             </FadeUp>
+          </div>
 
-            {/* Footer */}
-            <FadeUp delay={100}>
-              <div className="mt-20 pt-10" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-2 font-bold" style={{ letterSpacing: '-0.04em', color: '#fff' }}>
-                    <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: '#FEC944' }} />
-                    Rx Library
-                  </div>
-                  <div className="flex flex-wrap justify-center gap-6">
-                    {['Privacy Policy', 'Terms of Service', 'HIPAA Notice', 'Contact'].map((link) => (
-                      <a key={link} href="#" className="text-xs transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.7)'; }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.35)'; }}
-                      >
-                        {link}
-                      </a>
-                    ))}
-                  </div>
-                  <div className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                    © 2026 RX Library. All rights reserved.
-                  </div>
-                </div>
-              </div>
-            </FadeUp>
+          {/* Footer bar — full-width, spans both columns, above canvas */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            zIndex: 5,
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            padding: '28px 80px',
+            display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 24,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', fontSize: 18, letterSpacing: '-0.04em' }}>
+              <span style={{ color: '#FEC944', fontWeight: 400 }}>rx</span>
+              <span style={{ color: '#ffffff', fontWeight: 700 }}>library</span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0 24px' }}>
+              {['Privacy Policy', 'Terms of Service', 'HIPAA Notice', 'Contact'].map((link) => (
+                <a key={link} href="#" style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', textDecoration: 'none', transition: 'color 0.2s' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.7)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.35)'; }}
+                >
+                  {link}
+                </a>
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>
+              © 2026 RX Library. All rights reserved.
+            </div>
           </div>
         </section>
 
