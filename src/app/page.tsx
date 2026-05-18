@@ -187,6 +187,18 @@ const BRAND_CARDS = [
   },
 ];
 
+// ─── Order tracking steps ─────────────────────────────────────────────────────
+const TRACKING_STEPS = [
+  { label: 'Intake Submitted',    color: '#7C6FFF' },
+  { label: 'Provider Assigned',   color: '#7C6FFF' },
+  { label: 'Consult Scheduled',   color: '#3B82F6' },
+  { label: 'Consult Complete',    color: '#3B82F6' },
+  { label: 'Rx Sent',            color: '#D4A017' },
+  { label: 'Processing',          color: '#D4A017' },
+  { label: 'Shipped',             color: '#10B981' },
+  { label: 'Delivered',           color: '#10B981' },
+];
+
 // ─── Care network bento cards ─────────────────────────────────────────────────
 
 const CARE_CARDS = [
@@ -365,6 +377,22 @@ export default function HomePage() {
   const isLoggedIn = false;
   const roleHome = { href: '/login' };
 
+  // Order tracking auto-advance — step 7 (Delivered) holds longer
+  const [trackingStep, setTrackingStep] = useState(1);
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
+    const advance = (current: number) => {
+      const delay = current === 7 ? 11000 : 2500;
+      t = setTimeout(() => {
+        const next = (current + 1) % TRACKING_STEPS.length;
+        setTrackingStep(next);
+        advance(next);
+      }, delay);
+    };
+    advance(1);
+    return () => clearTimeout(t);
+  }, []);
+
   // Brand carousel auto-advance
   const [activeBrand, setActiveBrand] = useState(0);
   // Track previous index to compute advance direction during render.
@@ -384,6 +412,9 @@ export default function HomePage() {
   const section5Ref     = useRef<HTMLElement>(null);
   const footerRef       = useRef<HTMLElement>(null);
   const careBentoRef    = useRef<HTMLDivElement>(null);
+  const careStatsRef    = useRef<HTMLDivElement>(null);
+  const [careVisible, setCareVisible] = useState(false);
+  const [statVals, setStatVals]       = useState([0, 0, 0, 90]);
 
   // Blink energy stroke across Care Network bento cards — direct DOM, no re-render
   useEffect(() => {
@@ -431,6 +462,52 @@ export default function HomePage() {
     return () => timeouts.forEach(clearTimeout);
   }, []);
 
+  // Care Network stats — IntersectionObserver + RAF counter
+  useEffect(() => {
+    const el = careStatsRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry?.isIntersecting) { setCareVisible(true); obs.disconnect(); } },
+      { threshold: 0.4 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!careVisible) return;
+    const DURATION = 1400;
+    const STAGGER  = DURATION; // next cell only starts after previous finishes
+    const froms    = [0,     0,  0,   90];
+    const targets  = [10000, 50, 200, 0 ];
+    const rafIds: number[]                         = [];
+    const timers:  ReturnType<typeof setTimeout>[] = [];
+
+    froms.forEach((from, i) => {
+      const t = setTimeout(() => {
+        const start = performance.now();
+        const tick  = (now: number) => {
+          const raw  = Math.min((now - start) / DURATION, 1);
+          const ease = 1 - Math.pow(1 - raw, 3);
+          setStatVals(prev => {
+            const next = [...prev];
+            next[i] = from + (targets[i]! - from) * ease;
+            return next;
+          });
+          if (raw < 1) rafIds[i] = requestAnimationFrame(tick);
+          else setStatVals(prev => { const n = [...prev]; n[i] = targets[i]!; return n; });
+        };
+        rafIds[i] = requestAnimationFrame(tick);
+      }, 820 + i * STAGGER);
+      timers.push(t);
+    });
+
+    return () => {
+      timers.forEach(clearTimeout);
+      rafIds.forEach(id => id && cancelAnimationFrame(id));
+    };
+  }, [careVisible]);
+
   return (
     <div style={{ background: '#080808', minHeight: '100vh' }}>
       <style dangerouslySetInnerHTML={{ __html: `
@@ -477,6 +554,67 @@ export default function HomePage() {
         .bento-energy {
           animation: bento-pulse 1.8s ease-in-out 3 forwards !important;
         }
+        @keyframes complete-pop {
+          0%   { transform: scale(1); }
+          40%  { transform: scale(1.5); }
+          70%  { transform: scale(0.9); }
+          100% { transform: scale(1); }
+        }
+        .complete-pop { animation: complete-pop 0.6s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+        @keyframes header-slide-up {
+          from { opacity: 0; transform: translateY(7px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .header-delivered { animation: header-slide-up 0.35s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+        @keyframes card-complete-scale {
+          0%   { transform: scale(1); }
+          35%  { transform: scale(1.055); }
+          65%  { transform: scale(0.98); }
+          100% { transform: scale(1); }
+        }
+        @keyframes card-stroke-pulse {
+          0%, 100% { border-color: transparent; box-shadow: 8px 8px 22px rgba(13,39,80,0.16), -6px -6px 18px rgba(255,255,255,0.82); }
+          40%, 60% { border-color: rgba(16,185,129,0.9); box-shadow: 8px 8px 22px rgba(13,39,80,0.16), -6px -6px 18px rgba(255,255,255,0.82), 0 0 32px rgba(16,185,129,0.32), 0 0 8px rgba(16,185,129,0.5); }
+        }
+        .card-at-complete {
+          animation:
+            card-complete-scale 0.65s cubic-bezier(0.22,1,0.36,1) forwards,
+            card-stroke-pulse 1.8s ease-in-out 0.5s infinite;
+        }
+
+        @keyframes dot-cascade-green {
+          0%   { background: #E8EAEC; box-shadow: inset 3px 3px 6px rgba(13,39,80,0.12), inset -2px -2px 5px rgba(255,255,255,0.88); }
+          40%  { background: #10B981; box-shadow: 0 0 14px rgba(16,185,129,0.7), 0 0 4px rgba(16,185,129,0.9); }
+          100% { background: #E8EAEC; box-shadow: inset 3px 3px 6px rgba(13,39,80,0.12), inset -2px -2px 5px rgba(255,255,255,0.88); }
+        }
+        .dot-cascade-green { animation: dot-cascade-green 1.1s ease-in-out forwards; }
+
+        @keyframes pill-flash {
+          0%   { transform: scale(1.07); box-shadow: inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88), 0 0 14px rgba(255,255,255,0.55); }
+          100% { transform: scale(1);   box-shadow: inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88); }
+        }
+        .pill-flash { animation: pill-flash 0.5s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+        @keyframes dot-blip {
+          0%, 100% { box-shadow: 3px 3px 8px rgba(212,160,23,0.35), -2px -2px 5px rgba(255,255,255,0.5); }
+          50%       { box-shadow: 0 0 0 5px rgba(254,201,68,0.15), 0 0 14px rgba(254,201,68,0.35), 3px 3px 8px rgba(212,160,23,0.35), -2px -2px 5px rgba(255,255,255,0.5); }
+        }
+        .dot-blip { animation: dot-blip 2.8s ease-in-out infinite; }
+        @keyframes dot-blip-green {
+          0%, 100% { box-shadow: 3px 3px 8px rgba(16,185,129,0.35), -2px -2px 5px rgba(255,255,255,0.5); }
+          50%       { box-shadow: 0 0 0 5px rgba(16,185,129,0.18), 0 0 16px rgba(16,185,129,0.5), 3px 3px 8px rgba(16,185,129,0.35), -2px -2px 5px rgba(255,255,255,0.5); }
+        }
+        .dot-blip-green { animation: dot-blip-green 2.8s ease-in-out infinite; }
+
+        @keyframes stat-cell-lift {
+          0%   { transform: translateY(18px); opacity: 0; }
+          65%  { transform: translateY(-5px); opacity: 1; }
+          100% { transform: translateY(0);    opacity: 1; }
+        }
+        .stat-lift { animation: stat-cell-lift 1s cubic-bezier(0.22,1,0.36,1) both; }
+
         .hero-badge {
           animation: floatY 4s ease-in-out infinite;
         }
@@ -1269,25 +1407,306 @@ export default function HomePage() {
                   no credentialing overhead. Just API calls.
                 </p>
 
-                {/* Divider */}
-                <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '0 0 30px' }} />
+                {/* Divider — draws in on entry */}
+                <div style={{
+                  height: 1, margin: '0 0 30px',
+                  background: 'rgba(255,255,255,0.28)',
+                  boxShadow: careVisible ? '0 0 6px rgba(255,255,255,0.18)' : 'none',
+                  width: careVisible ? '100%' : '0%',
+                  transition: 'width 0.8s ease 0.1s, box-shadow 0.8s ease 0.1s',
+                }} />
 
                 {/* 2 × 2 stat grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '22px 28px' }}>
-                  {[
-                    { value: '10,000+', label: 'Credentialed Clinicians' },
-                    { value: '50',      label: 'States Covered'          },
-                    { value: '200+',    label: 'Partner Pharmacies'      },
-                    { value: '0 days',  label: 'to Credential'           },
-                  ].map(({ value, label }) => (
-                    <div key={label}>
-                      <p style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff', margin: '0 0 5px', lineHeight: 1 }}>{value}</p>
+                <div ref={careStatsRef} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '22px 28px' }}>
+                  {([
+                    { label: 'Credentialed Clinicians', format: (v: number) => Math.round(v) >= 10000 ? '10,000+' : Math.round(v).toLocaleString() },
+                    { label: 'States Covered',          format: (v: number) => String(Math.round(v)) },
+                    { label: 'Partner Pharmacies',      format: (v: number) => Math.round(v) >= 200 ? '200+' : String(Math.round(v)) },
+                    { label: 'to Credential',           format: (v: number) => `${Math.round(v)} days` },
+                  ] as { label: string; format: (v: number) => string }[]).map(({ label, format }, i) => (
+                    <div
+                      key={label}
+                      className={careVisible ? 'stat-lift' : undefined}
+                      style={{ animationDelay: careVisible ? `${820 + i * 1400}ms` : undefined }}
+                    >
+                      <p style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff', margin: '0 0 5px', lineHeight: 1 }}>
+                        {format(statVals[i] ?? 0)}
+                      </p>
                       <p style={{ fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,0.35)', margin: 0, letterSpacing: '0.02em' }}>{label}</p>
                     </div>
                   ))}
                 </div>
               </div>
             </FadeUp>
+          </div>
+        </section>
+
+        {/* ── Section 6: End to End Automation ─────────────────────────────── */}
+        <section style={{
+          background: '#E8EAEC',
+          position: 'relative',
+          padding: '120px 80px',
+        }}>
+          <div style={{
+            maxWidth: 1280, margin: '0 auto',
+            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center',
+          }}>
+
+            {/* Right — app cards (order:2 pushes to right) */}
+            <div style={{ order: 2 }}>
+            <FadeUp>
+              <div>
+
+                {/* Top row: product + order details */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+
+                  {/* Product card */}
+                  <div style={{
+                    borderRadius: 20, background: '#E8EAEC',
+                    boxShadow: '8px 8px 22px rgba(13,39,80,0.16), -6px -6px 18px rgba(255,255,255,0.82)',
+                    padding: '24px 22px',
+                    animation: 'floatY 5s ease-in-out infinite',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+                      <p style={{ fontSize: 15, fontWeight: 700, color: '#1A1A1C', margin: 0 }}>Semaglutide</p>
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{ fontSize: 8, fontWeight: 700, color: '#D4A017', letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 1px' }}>FROM</p>
+                        <p style={{ fontSize: 20, fontWeight: 800, color: '#1A1A1C', margin: 0, letterSpacing: '-0.02em' }}>$299</p>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                      {['injection', 'Injectable Solution', '3 options'].map((tag) => (
+                        <span key={tag} style={{
+                          fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                          background: '#E8EAEC', color: '#999',
+                          boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                        }}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <p style={{ fontSize: 11.5, lineHeight: 1.65, color: '#AAAAAA', margin: 0 }}>
+                      Flexible dose injectable medication reviewed in medically supervised weight management care
+                    </p>
+                  </div>
+
+                  {/* Order Details card */}
+                  <div style={{
+                    borderRadius: 20, background: '#E8EAEC',
+                    boxShadow: '8px 8px 22px rgba(13,39,80,0.16), -6px -6px 18px rgba(255,255,255,0.82)',
+                    padding: '24px 22px',
+                  }}>
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#AAAAAA', margin: '0 0 18px' }}>
+                      Order Details
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 10px' }}>
+                      {([
+                        { label: 'ORDER ID',  value: '#35c39363',         mono: true,  badge: false },
+                        { label: 'PLACED',    value: 'May 3, 2026',       mono: false, badge: false },
+                        { label: 'CATEGORY',  value: 'Weight Management', mono: false, badge: false },
+                        { label: 'STATUS',    value: 'Provider Assigned', mono: false, badge: true  },
+                      ] as { label: string; value: string; mono: boolean; badge: boolean }[]).map(({ label, value, mono, badge }) => (
+                        <div key={label}>
+                          <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C0C0C0', margin: '0 0 5px' }}>{label}</p>
+                          {badge ? (
+                            <span
+                              key={trackingStep}
+                              className="pill-flash"
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 5,
+                                fontSize: 10, fontWeight: 700,
+                                padding: '4px 10px', borderRadius: 999,
+                                background: '#E8EAEC',
+                                boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                                color: TRACKING_STEPS[trackingStep]!.color,
+                              }}
+                            >
+                              <span style={{ width: 5, height: 5, borderRadius: '50%', background: TRACKING_STEPS[trackingStep]!.color, flexShrink: 0 }} />
+                              {TRACKING_STEPS[trackingStep]!.label}
+                            </span>
+                          ) : (
+                            <p style={{ fontSize: 12, fontWeight: 600, color: '#555', margin: 0, fontFamily: mono ? 'monospace' : 'inherit' }}>{value}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Order Tracking card */}
+                <div
+                  className={trackingStep === 7 ? 'card-at-complete' : undefined}
+                  style={{
+                  borderRadius: 20, background: '#E8EAEC',
+                  boxShadow: '8px 8px 22px rgba(13,39,80,0.16), -6px -6px 18px rgba(255,255,255,0.82)',
+                  border: '1.5px solid transparent',
+                  padding: '28px 26px',
+                }}>
+                  {/* Header + percentage */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    {trackingStep === 7 ? (
+                      <p key="delivered" className="header-delivered" style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#10B981', margin: 0 }}>
+                        ✓ Delivered
+                      </p>
+                    ) : (
+                      <p key="tracking" style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#AAAAAA', margin: 0 }}>
+                        Order Tracking
+                      </p>
+                    )}
+                    <p
+                      key={trackingStep}
+                      className={trackingStep === 7 ? 'complete-pop' : undefined}
+                      style={{ fontSize: 11, fontWeight: 700, margin: 0, letterSpacing: '-0.01em', transition: 'color 0.4s ease', color: trackingStep === 7 ? '#10B981' : '#D4A017' }}
+                    >
+                      {Math.round((trackingStep / 7) * 100)}%
+                    </p>
+                  </div>
+                  {/* Progress bar */}
+                  <div style={{
+                    height: 3, borderRadius: 2, marginBottom: 20,
+                    background: '#E8EAEC',
+                    boxShadow: 'inset 2px 2px 4px rgba(13,39,80,0.10), inset -1px -1px 3px rgba(255,255,255,0.9)',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${(trackingStep / 7) * 100}%`,
+                      background: trackingStep === 7
+                        ? 'linear-gradient(to right, #10B981, #059669)'
+                        : 'linear-gradient(to right, #FEC944, #D4A017)',
+                      borderRadius: 2,
+                      transition: 'width 0.5s ease, background 0.4s ease',
+                      boxShadow: trackingStep === 7 ? '0 0 18px rgba(16,185,129,0.7), 0 0 6px rgba(16,185,129,0.9)' : '0 0 6px rgba(254,201,68,0.45)',
+                    }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'relative' }}>
+                    {/* Background line */}
+                    <div style={{
+                      position: 'absolute', left: 10, top: 11, bottom: 11, width: 2,
+                      background: 'rgba(13,39,80,0.07)', borderRadius: 1, overflow: 'hidden', zIndex: 0,
+                    }}>
+                      {/* Gold fill */}
+                      <div style={{
+                        position: 'absolute', top: 0, left: 0, right: 0,
+                        height: `${(trackingStep / 7) * 100}%`,
+                        background: trackingStep === 7
+                          ? 'linear-gradient(to bottom, #10B981, rgba(16,185,129,0.4))'
+                          : 'linear-gradient(to bottom, #FEC944, rgba(254,201,68,0.35))',
+                        transition: 'height 0.5s ease',
+                        borderRadius: 1,
+                      }} />
+                    </div>
+                    {[
+                      'Intake submitted',
+                      'Provider assigned',
+                      'Consult scheduled',
+                      'Consult complete',
+                      'Rx sent to pharmacy',
+                      'Pharmacy processing',
+                      'Shipped',
+                      'Delivered',
+                    ].map((label, idx) => {
+                      const state = idx < trackingStep ? 'done' : idx === trackingStep ? 'active' : 'pending';
+                      return (
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
+                          {/* Fixed 22px wrapper keeps line centered regardless of dot size */}
+                          <div style={{ width: 22, height: 22, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div
+                              className={
+                                trackingStep === 7 && state === 'done' ? 'dot-cascade-green'
+                                : state === 'active' ? (trackingStep === 7 ? 'dot-blip-green' : 'dot-blip')
+                                : undefined
+                              }
+                              style={{
+                                width: state === 'active' ? 14 : 22,
+                                height: state === 'active' ? 14 : 22,
+                                borderRadius: '50%',
+                                background: state === 'active'
+                                  ? (trackingStep === 7 ? '#10B981' : '#FEC944')
+                                  : '#E8EAEC',
+                                boxShadow: state === 'active'
+                                  ? trackingStep === 7
+                                    ? '3px 3px 8px rgba(16,185,129,0.35), -2px -2px 5px rgba(255,255,255,0.5)'
+                                    : '3px 3px 8px rgba(212,160,23,0.35), -2px -2px 5px rgba(255,255,255,0.5)'
+                                  : 'inset 3px 3px 6px rgba(13,39,80,0.12), inset -2px -2px 5px rgba(255,255,255,0.88)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                transition: 'background 0.4s ease, box-shadow 0.4s ease, width 0.3s ease, height 0.3s ease',
+                                animationDelay: trackingStep === 7 && state === 'done' ? `${idx * 80}ms` : undefined,
+                              }}
+                            >
+                              {state === 'done' && (
+                                <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                                  <path d="M2 6l3 3 5-5" stroke="#BBBBBB" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              )}
+                            </div>
+                          </div>
+                          <p style={{
+                            fontSize: 13, margin: 0, lineHeight: 1,
+                            fontWeight: state === 'active' ? 700 : 400,
+                            color: state === 'active' ? '#1A1A1C' : state === 'done' ? '#C0C0C0' : '#BBBBBB',
+                            transition: 'color 0.4s ease',
+                          }}>
+                            {label}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ marginTop: 22, paddingTop: 16, borderTop: '1px solid rgba(13,39,80,0.07)', display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
+                    <p style={{ fontSize: 10, color: '#C0C0C0', margin: 0, fontWeight: 500 }}>
+                      Fully automated · Zero manual steps · Audit logged
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </FadeUp>
+            </div>
+
+            {/* Left — copy (order:1 keeps on left) */}
+            <div style={{ order: 1 }}>
+            <FadeUp>
+              <div>
+                <p style={{ color: '#D4A017', fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16 }}>
+                  End to End Automation
+                </p>
+                <h2 style={{ fontSize: 'clamp(32px, 3.8vw, 54px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-0.03em', color: '#111', marginBottom: 20 }}>
+                  From intake to delivery<br />
+                  <span style={{ color: '#FEC944' }}>without lifting a finger.</span>
+                </h2>
+                <p style={{ fontSize: 16, lineHeight: 1.75, color: '#888', marginBottom: 40, maxWidth: 460 }}>
+                  Access a nationwide network of licensed clinicians and pharmacy partners, ready to see your patients and fulfill prescriptions the day you launch.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
+                  {[
+                    { title: 'Automatic patient routing to available providers',         desc: 'The right clinician, the right network — assigned instantly.'                      },
+                    { title: 'Prescriptions transmitted and fulfilled end-to-end',       desc: 'From approval to pharmacy to doorstep with zero manual steps.'                    },
+                    { title: 'Built-in refill reminders, stall alerts, and renewal flows', desc: 'Nothing falls through the cracks. Ever.'                                       },
+                  ].map(({ title, desc }) => (
+                    <div key={title} style={{ display: 'flex', gap: 14 }}>
+                      <div style={{
+                        width: 24, height: 24, borderRadius: '50%', flexShrink: 0, marginTop: 2,
+                        background: '#E8EAEC',
+                        boxShadow: 'inset 3px 3px 6px rgba(13,39,80,0.12), inset -2px -2px 5px rgba(255,255,255,0.88)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 6l3 3 5-5" stroke="#AAAAAA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1C', margin: '0 0 5px', lineHeight: 1.4 }}>{title}</p>
+                        <p style={{ fontSize: 13, lineHeight: 1.65, color: '#AAAAAA', margin: 0 }}>{desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </FadeUp>
+            </div>
+
           </div>
         </section>
 
