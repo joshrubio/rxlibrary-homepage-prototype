@@ -86,23 +86,13 @@ export function MarketingNav({ isLoggedIn, dashboardHref }: MarketingNavProps) {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href={isLoggedIn ? dashboardHref : '/login'}
-              className="text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-80"
-              style={{
-                color: 'rgba(255,255,255,0.65)',
-                background: '#1F1F22',
-                border: 'none',
-                boxShadow: '6px 6px 16px rgba(0,0,0,0.55), -4px -4px 10px rgba(255,255,255,0.045)',
-              }}
+              className="btn-login text-sm font-semibold px-4 py-2 rounded-lg"
             >
               {isLoggedIn ? 'Dashboard' : 'Log In'}
             </Link>
             <a
               href="/demo"
-              className="text-sm font-semibold px-5 py-2.5 rounded-[9px] transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{
-                background: '#FEC944', color: '#1A1200',
-                boxShadow: '6px 6px 16px rgba(0,0,0,0.50), -4px -4px 10px rgba(255,255,255,0.04)',
-              }}
+              className="btn-demo text-sm font-semibold px-5 py-2.5 rounded-[9px]"
             >
               Book a demo →
             </a>
@@ -167,16 +157,14 @@ export function MarketingNav({ isLoggedIn, dashboardHref }: MarketingNavProps) {
             <Link
               href={isLoggedIn ? dashboardHref : '/login'}
               onClick={() => setMenuOpen(false)}
-              className="text-sm font-semibold py-3 text-center rounded-xl transition-colors"
-              style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.8)' }}
+              className="btn-login text-sm font-semibold py-3 text-center rounded-xl"
             >
               {isLoggedIn ? 'Dashboard' : 'Log In'}
             </Link>
             <a
               href="/demo"
               onClick={() => setMenuOpen(false)}
-              className="text-sm font-semibold py-3 text-center rounded-xl transition-all hover:opacity-90"
-              style={{ background: '#FEC944', color: '#1E1E1E' }}
+              className="btn-demo text-sm font-semibold py-3 text-center rounded-xl"
             >
               Book a demo →
             </a>

@@ -178,7 +178,7 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
       new THREE.Vector3(3.2, 2.8, 3.2),  // KF1 — diagonal
       new THREE.Vector3(3.2, 2.8, 3.2),  // KF2 — diagonal
       new THREE.Vector3(0.0, 1.2, 5.5),  // KF3 — front face, slight elevation
-      new THREE.Vector3(0.0, 1.2, 5.5),  // KF4 — same front face for floor scatter
+      new THREE.Vector3(3.2, 2.8, 3.2),  // KF4 — diagonal (Care Network: cube off-screen)
       new THREE.Vector3(3.2, 2.8, 3.2),  // KF5 — footer: back to diagonal, cube left side
     ];
 
@@ -221,10 +221,10 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
       { pos: s2w(0.73, 0.50), sc: 0.47, ambI: 1.0,  glI: 0,   ry: 0.30, rx: 0.08, rc: false },
       // 2 — White Label: small, right column next to title, palette cycle
       { pos: s2w(0.74, 0.30), sc: 0.50, ambI: 1.0,  glI: 0,   ry: 0.28, rx: 0.07, rc: true  },
-      // 3 — Care Network: center-left bento, blip stickers like hero, looping explode+reassemble
-      { pos: s2w(0.68, 0.82), sc: 0.65, ambI: 0.22, glI: 4.5, ry: 0.00, rx: 0.00, rc: false },
-      // 4 — Testimonials: center, floor-scatter animation, warm glow
-      { pos: s2w(0.50, 0.40), sc: 0.65, ambI: 0.22, glI: 4.5, ry: 0.00, rx: 0.00, rc: false },
+      // 3 — Testimonials: far left, explode animation, warm glow
+      { pos: s2w(0.22, 0.76), sc: 0.52, ambI: 0.22, glI: 4.5, ry: 0.00, rx: 0.00, rc: false },
+      // 4 — Care Network: cube off-screen
+      { pos: s2w(0.50, 1.6),  sc: 0.50, ambI: 0.0,  glI: 0,   ry: 0.00, rx: 0.00, rc: false },
       // 5 — Footer: left side, gentle rotation, warm glow, sticker blip
       { pos: s2w(0.22, 0.58), sc: 0.75, ambI: 0.22, glI: 4.5, ry: 0.18, rx: 0.05, rc: false },
     ];
@@ -252,24 +252,19 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
       const s5T  = section5Ref.current ? docTop(section5Ref.current)  : s4T + 1100;
       const s6T  = footerRef.current   ? docTop(footerRef.current)    : s5T + 2000;
       // KF 3 fires when section 4 top enters the viewport (70% from top)
+      // KF 3 (Testimonials) fires when section 4 top enters viewport 70% from top
       const s4Mid = s4T - window.innerHeight * 0.7;
-      // KF 3 ends when section 4 bottom has mostly scrolled past
+      // KF 3 ends when section 4 bottom is 80% above the fold (early cutoff)
       const s4Bot = s4T + (section4Ref.current?.offsetHeight ?? 1050);
-      const s4End = s4Bot - window.innerHeight * 0.2;
-      // KF 4 fires when section 5's center reaches the viewport center
-      const s5Mid = section5Ref.current
-        ? s5T + section5Ref.current.offsetHeight / 2 - window.innerHeight / 2
-        : s4T + 2200;
+      const s4End = s4Bot - window.innerHeight * 0.8;
       // KF 5 fires when footer top enters viewport 40% from top
       const footerThresh = s6T - window.innerHeight * 0.4;
 
       if (sy < hBot)                            return 0;
       if (sy < s3T - window.innerHeight * 0.6) return 1;
       if (sy < s4Mid)                           return 2;
-      if (sy < s4End)                           return 3;  // Care Network only
-      if (sy < s5Mid)                           return 2;  // gap: cube drifts off via KF2 scroll-relative
-      if (sy < footerThresh)                    return 4;  // Testimonials
-      return 5;                                            // Footer
+      if (sy < s4End)                           return 3;  // Testimonials floor scatter
+      return 4;  // Care Network + Footer: narrative cube stays off-screen
     }
 
     // ── Face-rotation animation (KF 1 — orbital section) ─────────────────────
@@ -325,46 +320,30 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
     const RC_HOLD = 2.0, RC_DUR = 1.2;
     const eio = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
-    // ── Explode + reassemble animation (KF 3) ────────────────────────────────
-    // assembled → hold → explode outward radially → brief pause → pieces fly back
-    interface ShatterCubie {
-      group: THREE.Group;
-      restPos: THREE.Vector3;    // assembled grid position
-      scatterPos: THREE.Vector3; // explosion target
-      delay: number;             // stagger delay — explode
-      dur: number;               // duration — explode
-      rDelay: number;            // stagger delay — reassemble
-      rDur: number;              // duration — reassemble
-    }
-    let shatterCubies: ShatterCubie[] = [];
-    type ShatterPhase = 'idle' | 'settling' | 'assembled' | 'exploding' | 'scatterHold' | 'reassembling' | 'done';
-    let shatterPhase: ShatterPhase = 'idle';
-    let shatterElapsed    = 0;
-    let reassembleElapsed = 0;
-    let assembleTimer     = 0;
-    let scatterHoldTimer  = 0;
-    const ASSEMBLE_HOLD = 0.7;   // seconds assembled before exploding
-    const SCATTER_HOLD  = 0.35;  // seconds scattered before reassembling
-    let shatterLockPos: THREE.Vector3 | null = null;
     let prevKI = -1;
     const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
-
-    // ── Floor-scatter animation (KF 4 — Testimonials) ─────────────────────────
-    // Cube appears assembled → hold → pieces scatter to flat floor, stay there
-    interface FloorCubie {
+    // ── Explode animation (KF 3 — Testimonials) ──────────────────────────────
+    // Cube settles → trembles → explodes outward → fades out. Plays once per entry.
+    interface ExplodeCubie {
       group: THREE.Group;
       restPos: THREE.Vector3;
       scatterPos: THREE.Vector3;
       delay: number;
       dur: number;
     }
-    let floorCubies: FloorCubie[] = [];
-    type FloorPhase = 'idle' | 'settling' | 'assembled' | 'shattering' | 'done';
-    const SETTLE_DIST = 0.25; // world units — cube must be this close before animation fires
-    let floorPhase: FloorPhase = 'idle';
-    let floorElapsed   = 0;
-    let floorHoldTimer = 0;
-    let floorLockPos: THREE.Vector3 | null = null;
+    let explodeCubies: ExplodeCubie[] = [];
+    type ExplodePhase = 'idle' | 'settling' | 'assembled' | 'trembling' | 'exploding' | 'fading' | 'done';
+    const SETTLE_DIST    = 0.25;
+    const ASSEMBLED_HOLD = 2.2;  // seconds cube sits still before trembling
+    const TREMBLE_DUR    = 1.6;  // seconds of trembling
+    const EXPLODE_DUR    = 0.5;
+    const FADE_DUR       = 0.35;
+    let explodePhase: ExplodePhase = 'idle';
+    let explodeLockPos: THREE.Vector3 | null = null;
+    let assembledTimer = 0;
+    let trembleElapsed = 0;
+    let explodeElapsed = 0;
+    let fadeElapsed    = 0;
 
     // ── Animation loop ────────────────────────────────────────────────────────
     const clock = new THREE.Clock();
@@ -373,6 +352,13 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
       const delta = clock.getDelta();
       const ki = getKFIndex();
       const kf = KFS[ki]!;
+
+      // Past Testimonials — hide canvas entirely, nothing to render
+      if (ki === 4) {
+        if (renderer.domElement.style.display !== 'none') renderer.domElement.style.display = 'none';
+        return;
+      }
+      if (renderer.domElement.style.display === 'none') renderer.domElement.style.display = '';
 
       // ── Camera per-KF lerp ────────────────────────────────────────────────────
       // Move camera toward KF target, then recompute lookAt + focal plane so
@@ -401,10 +387,9 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
         s2wInto(0.60, yFrac, _dynPos);
         targetPos = _dynPos;
       } else if (ki === 3) {
-        // Always use shatterLockPos — set at entry from KF3 camera perspective
-        if (shatterLockPos) targetPos = shatterLockPos;
-      } else if (ki === 4) {
-        if (floorLockPos) targetPos = floorLockPos;
+        // Only lerp during settling; all other phases control position directly
+        if (explodeLockPos && explodePhase === 'settling') targetPos = explodeLockPos;
+        else targetPos = rubik.position;
       }
 
       // Smooth lerp toward target (position settles fast; scale/light slower)
@@ -463,24 +448,16 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
           heroPhase = 'scattered';
         }
         if (prevKI === 3 && ki !== 3) {
-          // Leaving Care Network — snap pieces back, reset for re-entry
-          for (const sc of shatterCubies) sc.group.position.copy(sc.restPos);
-          shatterPhase      = 'idle';
-          shatterLockPos    = null;
-          shatterCubies     = [];
-          assembleTimer     = 0;
-          scatterHoldTimer  = 0;
-          shatterElapsed    = 0;
-          reassembleElapsed = 0;
-        }
-        if (prevKI === 4 && ki !== 4) {
-          // Leaving testimonials — snap pieces back, reset for re-entry
-          for (const fc of floorCubies) fc.group.position.copy(fc.restPos);
-          floorPhase     = 'idle';
-          floorLockPos   = null;
-          floorCubies    = [];
-          floorHoldTimer = 0;
-          floorElapsed   = 0;
+          // Restore canvas + snap pieces back to grid for clean re-entry
+          renderer.domElement.style.opacity = '1';
+          for (const ec of explodeCubies) ec.group.position.copy(ec.restPos);
+          explodeCubies  = [];
+          explodePhase   = 'idle';
+          explodeLockPos = null;
+          assembledTimer = 0;
+          trembleElapsed = 0;
+          explodeElapsed = 0;
+          fadeElapsed    = 0;
         }
 
         // ── Entries ──────────────────────────────────────────────────────────────
@@ -500,17 +477,14 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
           }
           heroPhase = 'scattering';
         }
-        if (ki === 3 && shatterPhase === 'idle') {
-          // Snap rotation to face-front — consistent every re-entry
+        if (ki === 3 && explodePhase === 'idle') {
           rubik.rotation.set(0.15, 0, 0);
-          // Reset all cubies to canonical positions + orientations.
-          // Face rotations in KF1 leave group.rotation non-zero; if we don't reset,
-          // stickers will face inward or pieces will appear missing after reassembly.
+          // Canonical reset — face rotations from KF1 leave group.rotation non-zero
           for (const hc of heroCubies) {
             hc.group.position.copy(hc.gridPos);
             hc.group.rotation.set(0, 0, 0);
           }
-          // Lock position using KF3 camera perspective
+          // Lock position using KF3 front-face camera
           {
             const savedCam = camera.position.clone();
             camera.position.copy(CAM_POSITIONS[3]!);
@@ -518,71 +492,34 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
             camera.updateMatrixWorld();
             camera.getWorldDirection(_camDir);
             focalPlane.setFromNormalAndCoplanarPoint(_camDir, new THREE.Vector3(0, 0, 0));
-            s2wInto(0.68, 0.72, _dynPos);
-            shatterLockPos = _dynPos.clone();
+            s2wInto(0.22, 0.76, _dynPos);
+            explodeLockPos = _dynPos.clone();
+            rubik.position.copy(explodeLockPos); // teleport — no lerp journey
             camera.position.copy(savedCam);
             camera.lookAt(0, 0, 0);
             camera.updateMatrixWorld();
             camera.getWorldDirection(_camDir);
             focalPlane.setFromNormalAndCoplanarPoint(_camDir, new THREE.Vector3(0, 0, 0));
           }
-          // Snapshot assembled positions + prepare radial scatter targets
-          shatterCubies = (rubik.children as THREE.Group[]).map((group) => {
+          // Build explode cubies — radial scatter targets
+          explodeCubies = (rubik.children as THREE.Group[]).map((group) => {
             const restPos = group.position.clone();
             const dir = restPos.clone();
             if (dir.lengthSq() < 0.001) dir.set((Math.random()-0.5),(Math.random()-0.5),(Math.random()-0.5));
             dir.normalize();
-            const dist = 2.2 + Math.random() * 2.8;
+            const dist = 3.0 + Math.random() * 3.0;
             const scatterPos = new THREE.Vector3(
-              restPos.x + dir.x * dist + (Math.random()-0.5) * 0.6,
-              restPos.y + dir.y * dist + (Math.random()-0.5) * 0.6,
-              restPos.z + dir.z * dist * 0.4,
+              restPos.x + dir.x * dist + (Math.random()-0.5) * 0.8,
+              restPos.y + dir.y * dist + (Math.random()-0.5) * 0.8,
+              restPos.z + dir.z * dist * 0.5,
             );
-            return { group, restPos, scatterPos,
-              delay: Math.random()*0.18, dur: 0.45+Math.random()*0.25,
-              rDelay: Math.random()*0.10, rDur: 0.55+Math.random()*0.25 };
+            return { group, restPos, scatterPos, delay: Math.random()*0.12, dur: 0.35+Math.random()*0.2 };
           });
-          shatterPhase   = 'settling';
-          assembleTimer  = 0;
-          shatterElapsed = 0;
-        }
-
-        if (ki === 4 && floorPhase === 'idle') {
-          rubik.rotation.set(0.15, 0, 0);
-          // Reset all cubies to canonical positions + orientations (same reason as KF3)
-          for (const hc of heroCubies) {
-            hc.group.position.copy(hc.gridPos);
-            hc.group.rotation.set(0, 0, 0);
-          }
-          // Lock position using KF4 camera perspective
-          {
-            const savedCam = camera.position.clone();
-            camera.position.copy(CAM_POSITIONS[4]!);
-            camera.lookAt(0, 0, 0);
-            camera.updateMatrixWorld();
-            camera.getWorldDirection(_camDir);
-            focalPlane.setFromNormalAndCoplanarPoint(_camDir, new THREE.Vector3(0, 0, 0));
-            s2wInto(0.28, 0.42, _dynPos);
-            floorLockPos = _dynPos.clone();
-            camera.position.copy(savedCam);
-            camera.lookAt(0, 0, 0);
-            camera.updateMatrixWorld();
-            camera.getWorldDirection(_camDir);
-            focalPlane.setFromNormalAndCoplanarPoint(_camDir, new THREE.Vector3(0, 0, 0));
-          }
-          const FLOOR_Y = -1.8;
-          floorCubies = (rubik.children as THREE.Group[]).map((group) => {
-            const restPos = group.position.clone();
-            const scatterPos = new THREE.Vector3(
-              restPos.x + (Math.random()-0.5) * 5.0,
-              FLOOR_Y + (Math.random()-0.5) * 0.10,
-              restPos.z + (Math.random()-0.5) * 0.6,
-            );
-            return { group, restPos, scatterPos, delay: Math.random()*0.25, dur: 0.55+Math.random()*0.35 };
-          });
-          floorPhase     = 'settling';
-          floorHoldTimer = 0;
-          floorElapsed   = 0;
+          explodePhase   = 'settling';
+          assembledTimer = 0;
+          trembleElapsed = 0;
+          explodeElapsed = 0;
+          fadeElapsed    = 0;
         }
 
         prevKI = ki;
@@ -598,86 +535,49 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
         if (done) { for (const hc of heroCubies) hc.group.position.copy(hc.scatterPos); heroPhase = 'scattered'; }
       }
 
-      // ── Explode + reassemble animation tick ──────────────────────────────────
+      // ── Explode tick (KF 3 — Testimonials) ───────────────────────────────────
       if (ki === 3) {
-        if (shatterPhase === 'settling') {
-          // Wait until cube has physically arrived before starting animation
-          if (shatterLockPos && rubik.position.distanceTo(shatterLockPos) < SETTLE_DIST) {
-            shatterPhase = 'assembled';
+        if (explodePhase === 'settling') {
+          if (explodeLockPos && rubik.position.distanceTo(explodeLockPos) < SETTLE_DIST) {
+            explodePhase = 'assembled'; assembledTimer = 0;
           }
-        } else if (shatterPhase === 'assembled') {
-          assembleTimer += delta;
-          if (assembleTimer >= ASSEMBLE_HOLD) { shatterPhase = 'exploding'; shatterElapsed = 0; }
-
-        } else if (shatterPhase === 'exploding') {
-          shatterElapsed += delta;
+        } else if (explodePhase === 'assembled') {
+          assembledTimer += delta;
+          if (assembledTimer >= ASSEMBLED_HOLD) {
+            explodePhase = 'trembling'; trembleElapsed = 0;
+          }
+        } else if (explodePhase === 'trembling') {
+          trembleElapsed += delta;
+          const t = trembleElapsed / TREMBLE_DUR;
+          const intensity = t * t * 0.18; // quadratic ramp-up
+          if (explodeLockPos) {
+            rubik.position.set(
+              explodeLockPos.x + (Math.random() - 0.5) * intensity,
+              explodeLockPos.y + (Math.random() - 0.5) * intensity,
+              explodeLockPos.z + (Math.random() - 0.5) * intensity * 0.4,
+            );
+          }
+          if (trembleElapsed >= TREMBLE_DUR) {
+            if (explodeLockPos) rubik.position.copy(explodeLockPos);
+            explodePhase = 'exploding'; explodeElapsed = 0;
+          }
+        } else if (explodePhase === 'exploding') {
+          explodeElapsed += delta;
           let allDone = true;
-          for (const sc of shatterCubies) {
-            const t = (shatterElapsed - sc.delay) / sc.dur;
+          for (const ec of explodeCubies) {
+            const t = (explodeElapsed - ec.delay) / ec.dur;
             if (t < 1) allDone = false;
             if (t <= 0) continue;
-            sc.group.position.lerpVectors(sc.restPos, sc.scatterPos, easeOut(Math.min(t, 1)));
+            ec.group.position.lerpVectors(ec.restPos, ec.scatterPos, easeOut(Math.min(t, 1)));
           }
-          if (allDone) { shatterPhase = 'scatterHold'; scatterHoldTimer = 0; }
-
-        } else if (shatterPhase === 'scatterHold') {
-          scatterHoldTimer += delta;
-          if (scatterHoldTimer >= SCATTER_HOLD) {
-            // Re-randomize scatter targets so each loop looks different
-            for (const sc of shatterCubies) {
-              const dir = sc.restPos.clone();
-              if (dir.lengthSq() < 0.001) dir.set((Math.random()-0.5),(Math.random()-0.5),(Math.random()-0.5));
-              dir.normalize();
-              const dist = 2.2 + Math.random() * 2.8;
-              sc.scatterPos.set(
-                sc.restPos.x + dir.x * dist + (Math.random()-0.5) * 0.6,
-                sc.restPos.y + dir.y * dist + (Math.random()-0.5) * 0.6,
-                sc.restPos.z + dir.z * dist * 0.4,
-              );
-              sc.rDelay = Math.random() * 0.10;
-              sc.rDur   = 0.55 + Math.random() * 0.25;
-            }
-            shatterPhase = 'reassembling'; reassembleElapsed = 0;
-          }
-
-        } else if (shatterPhase === 'reassembling') {
-          reassembleElapsed += delta;
-          let allDone = true;
-          for (const sc of shatterCubies) {
-            const t = (reassembleElapsed - sc.rDelay) / sc.rDur;
-            if (t < 1) allDone = false;
-            if (t <= 0) continue;
-            sc.group.position.lerpVectors(sc.scatterPos, sc.restPos, eio(Math.min(t, 1)));
-          }
-          if (allDone) {
-            // Snap all to exact rest positions, then loop back
-            for (const sc of shatterCubies) sc.group.position.copy(sc.restPos);
-            shatterPhase  = 'assembled';
-            assembleTimer = 0;
-          }
+          if (allDone) { explodePhase = 'fading'; fadeElapsed = 0; }
+        } else if (explodePhase === 'fading') {
+          fadeElapsed += delta;
+          const t = Math.min(fadeElapsed / FADE_DUR, 1);
+          renderer.domElement.style.opacity = String(1 - t);
+          if (t >= 1) explodePhase = 'done';
         }
-      }
-
-      // ── Floor-scatter tick (KF 4 — Testimonials) ─────────────────────────────
-      if (ki === 4) {
-        if (floorPhase === 'settling') {
-          if (floorLockPos && rubik.position.distanceTo(floorLockPos) < SETTLE_DIST) {
-            floorPhase = 'assembled';
-          }
-        } else if (floorPhase === 'assembled') {
-          floorHoldTimer += delta;
-          if (floorHoldTimer >= ASSEMBLE_HOLD) { floorPhase = 'shattering'; floorElapsed = 0; }
-        } else if (floorPhase === 'shattering') {
-          floorElapsed += delta;
-          let allDone = true;
-          for (const fc of floorCubies) {
-            const t = (floorElapsed - fc.delay) / fc.dur;
-            if (t < 1) allDone = false;
-            if (t <= 0) continue;
-            fc.group.position.lerpVectors(fc.restPos, fc.scatterPos, easeOut(Math.min(t, 1)));
-          }
-          if (allDone) floorPhase = 'done';
-        }
+        // 'done': canvas is transparent, nothing further to update
       }
 
       if (!kf.rc) {
@@ -728,8 +628,8 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
       KFS[0]!.pos.copy(s2w(0.50, 0.05));
       KFS[1]!.pos.copy(s2w(0.73, 0.50));
       KFS[2]!.pos.copy(s2w(0.74, 0.30));
-      KFS[3]!.pos.copy(s2w(0.68, 0.82));
-      KFS[4]!.pos.copy(s2w(0.28, 0.40));
+      KFS[3]!.pos.copy(s2w(0.22, 0.76));
+      KFS[4]!.pos.copy(s2w(0.50, 1.6));
       KFS[5]!.pos.copy(s2w(0.22, 0.58));
     };
     window.addEventListener('resize', onResize);

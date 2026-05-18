@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRef, useState, useEffect } from 'react';
 import { MarketingNav } from '@/components/homepage/marketing-nav';
 import { FadeUp } from '@/components/homepage/fade-up';
+import { FooterCube } from '@/components/homepage/footer-cube';
 
 const NarrativeCube = dynamic(
   () => import('@/components/homepage/narrative-cube').then((m) => ({ default: m.NarrativeCube })),
@@ -566,22 +567,16 @@ export default function HomePage() {
             alignItems: 'center', flexWrap: 'wrap', animationDelay: '0.72s',
           }}>
             {/* Login — dark neumorphic raised */}
-            <Link href="/login" style={{
+            <Link href="/login" className="btn-login" style={{
               padding: '12px 30px', borderRadius: 12,
-              fontWeight: 600, fontSize: 15, textDecoration: 'none', display: 'inline-block',
-              color: 'rgba(255,255,255,0.65)',
-              background: '#1F1F22',
-              boxShadow: '8px 8px 22px rgba(0,0,0,0.55), -5px -5px 14px rgba(255,255,255,0.05)',
-              border: 'none',
+              fontWeight: 600, fontSize: 15, display: 'inline-block',
             }}>
               Login
             </Link>
             {/* Book a demo — yellow neumorphic */}
-            <a href="/demo" style={{
+            <a href="/demo" className="btn-demo" style={{
               padding: '12px 30px', borderRadius: 12,
-              fontWeight: 700, fontSize: 15, textDecoration: 'none', display: 'inline-block',
-              background: '#D4A017', color: '#1A1200',
-              boxShadow: '8px 8px 22px rgba(0,0,0,0.50), -5px -5px 14px rgba(255,255,255,0.05)',
+              fontWeight: 700, fontSize: 15, display: 'inline-block',
             }}>
               Book a demo →
             </a>
@@ -1027,137 +1022,9 @@ export default function HomePage() {
           </div>{/* end carousel zIndex wrapper */}
         </section>
 
-        {/* ── Section 4: Care Network ──────────────────────────────────────────── */}
-        <section
-          ref={section4Ref}
-          style={{
-            background: '#E8EAEC',
-            position: 'relative',
-            overflow: 'hidden',
-            minHeight: 1050,
-            display: 'grid',
-            gridTemplateColumns: '1fr 800px',
-            marginTop: -1,
-          }}
-        >
-          {/* ── Bento bg — content cards ─────────────────────────────────────────── */}
-          <div ref={careBentoRef} style={{
-            position: 'absolute', inset: 0,
-            display: 'grid',
-            gridTemplateColumns: 'repeat(6, 356px)',
-            gridTemplateRows: 'repeat(3, 240px)',
-            gap: 16,
-            padding: 16,
-            pointerEvents: 'none',
-            zIndex: 0,
-          }}>
-            {Array.from({ length: 18 }).map((_, i) => {
-              const card = CARE_CARDS[i % CARE_CARDS.length]!;
-              return (
-                <div key={i} style={{
-                  borderRadius: 28,
-                  background: '#E8EAEC',
-                  borderWidth: '1.5px',
-                  borderStyle: 'solid',
-                  borderColor: 'transparent',
-                  boxShadow: '8px 8px 22px rgba(13,39,80,0.16), -6px -6px 18px rgba(255,255,255,0.72)',
-                  padding: '28px 28px 32px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  height: '100%',
-                  boxSizing: 'border-box',
-                }}>
-                  {/* Icon badge */}
-                  <div style={{
-                    width: 40, height: 40, borderRadius: 12,
-                    background: '#E8EAEC',
-                    boxShadow: 'inset 4px 4px 8px rgba(13,39,80,0.12), inset -4px -4px 8px rgba(255,255,255,0.85)',
-                    border: 'none',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                    marginBottom: 20,
-                  }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                      stroke="#AAAAAA" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                      <path d={card.icon} />
-                    </svg>
-                  </div>
-                  {/* Text */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: '#444', margin: 0, lineHeight: 1.35 }}>
-                      {card.title}
-                    </p>
-                    <p style={{ fontSize: 12.5, lineHeight: 1.7, color: '#B0B0B0', margin: 0 }}>
-                      {card.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Right fade — below fixed canvas (z:2), above bento cards (z:0) */}
-          <div aria-hidden style={{
-            position: 'absolute', right: 0, top: 0, bottom: 0, width: '90%',
-            background: 'linear-gradient(to right, transparent 0%, #E8EAEC 70%)',
-            zIndex: 1, pointerEvents: 'none',
-          }} />
-
-          {/* Title radial fade — sits on its own layer between cards and cube canvas.
-              Sized to wrap the copy block: ~520px wide × 320px tall, anchored to title position. */}
-          <div aria-hidden style={{
-            position: 'absolute',
-            right: 180,   // 240px padding − 60px bleed so fade extends slightly past text edge
-            top: 40,      // 80px title padding − 40px bleed above
-            width: 580,
-            height: 360,
-            background: 'radial-gradient(ellipse 50% 50% at 55% 40%, rgba(232,234,236,0.98) 30%, transparent 100%)',
-            zIndex: 1, pointerEvents: 'none',
-          }} />
-
-
-          {/* Left column spacer */}
-          <div style={{ position: 'relative', zIndex: 3 }} />
-
-          {/* Right — copy. zIndex 5 above canvas. */}
-          <div style={{
-            position: 'relative', zIndex: 5,
-            display: 'flex', alignItems: 'flex-start',
-            padding: '80px 240px 0 0',
-          }}>
-            <FadeUp>
-                <div style={{ textAlign: 'right' }}>
-                <p style={{
-                  color: '#D4A017', fontSize: 10, fontWeight: 800,
-                  letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16,
-                }}>
-                  Care Network
-                </p>
-                <h2 style={{
-                  fontSize: 'clamp(38px, 4.2vw, 60px)', fontWeight: 800,
-                  lineHeight: 1.06, letterSpacing: '-0.03em', margin: '0 0 20px',
-                }}>
-                  <span style={{ color: '#D4A017' }}>Every provider</span>
-                  <br />
-                  <span style={{ color: '#111111' }}>already connected.</span>
-                </h2>
-                <p style={{ fontSize: 16, lineHeight: 1.7, color: '#888', margin: 0, maxWidth: 460, marginLeft: 'auto' }}>
-                  Inherit the full network — providers, pharmacies, compliance — live from day one.
-                </p>
-              </div>
-            </FadeUp>
-          </div>
-        </section>
-
-        {/* ── Placeholder — scroll buffer ──────────────────────────────────── */}
-        <section style={{ minHeight: '100vh', background: '#E8EAEC', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-          <p style={{ color: '#ccc', fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Pending sections, coming soon</p>
-        </section>
-
         {/* ── Section 4: Testimonials ──────────────────────────────────────── */}
         <section
-          ref={section5Ref}
+          ref={section4Ref}
           style={{
             background: '#E8EAEC',
             position: 'relative',
@@ -1275,13 +1142,193 @@ export default function HomePage() {
 
         </section>
 
+        {/* ── Section 5: Care Network ───────────────────────────────────────────── */}
+        <section
+          ref={section5Ref}
+          style={{
+            background: '#E8EAEC',
+            position: 'relative',
+            overflow: 'hidden',
+            minHeight: 1050,
+            display: 'grid',
+            gridTemplateColumns: '1fr 800px',
+            marginTop: -1,
+          }}
+        >
+          {/* ── Bento bg — content cards ─────────────────────────────────────────── */}
+          <div ref={careBentoRef} style={{
+            position: 'absolute', inset: 0,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(6, 356px)',
+            gridTemplateRows: 'repeat(3, 240px)',
+            gap: 16,
+            padding: 16,
+            alignContent: 'center',
+            pointerEvents: 'none',
+            zIndex: 0,
+          }}>
+            {Array.from({ length: 18 }).map((_, i) => {
+              const card = CARE_CARDS[i % CARE_CARDS.length]!;
+              return (
+                <div key={i} style={{
+                  borderRadius: 28,
+                  background: '#E8EAEC',
+                  borderWidth: '1.5px',
+                  borderStyle: 'solid',
+                  borderColor: 'transparent',
+                  boxShadow: '8px 8px 22px rgba(13,39,80,0.16), -6px -6px 18px rgba(255,255,255,0.72)',
+                  padding: '28px 28px 32px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  height: '100%',
+                  boxSizing: 'border-box',
+                }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 12,
+                    background: '#E8EAEC',
+                    boxShadow: 'inset 4px 4px 8px rgba(13,39,80,0.12), inset -4px -4px 8px rgba(255,255,255,0.85)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, marginBottom: 20,
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="#AAAAAA" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d={card.icon} />
+                    </svg>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: '#444', margin: 0, lineHeight: 1.35 }}>{card.title}</p>
+                    <p style={{ fontSize: 12.5, lineHeight: 1.7, color: '#B0B0B0', margin: 0 }}>{card.description}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Right fade */}
+          <div aria-hidden style={{
+            position: 'absolute', right: 0, top: 0, bottom: 0, width: '90%',
+            background: 'linear-gradient(to right, transparent 0%, #E8EAEC 70%)',
+            zIndex: 1, pointerEvents: 'none',
+          }} />
+
+          {/* Left column spacer */}
+          <div style={{ position: 'relative', zIndex: 3 }} />
+
+          {/* Right — neumorphic card. zIndex 5 above canvas. */}
+          <div style={{
+            position: 'absolute', right: 0, top: 0, width: 800,
+            zIndex: 5,
+            display: 'flex', justifyContent: 'center',
+            paddingTop: 266,
+          }}>
+            <FadeUp>
+              <div style={{
+                width: 420,
+                borderRadius: 28,
+                background: '#1F1F22',
+                boxShadow: '12px 12px 32px rgba(0,0,0,0.55), -8px -8px 22px rgba(255,255,255,0.05)',
+                padding: '48px 44px 52px',
+                display: 'flex',
+                flexDirection: 'column',
+              }}>
+                {/* Eyebrow row: label + rxlibrary pill */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                  <p style={{
+                    color: '#D4A017', fontSize: 10, fontWeight: 800,
+                    letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0,
+                  }}>
+                    Care Network
+                  </p>
+                  {/* rxlibrary pill */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center',
+                    padding: '5px 13px', borderRadius: 999,
+                    background: '#1F1F22',
+                    boxShadow: 'inset 3px 3px 7px rgba(0,0,0,0.55), inset -3px -3px 7px rgba(255,255,255,0.04)',
+                    fontSize: 12, letterSpacing: '-0.03em',
+                  }}>
+                    <span style={{ color: '#FEC944', fontWeight: 400 }}>rx</span>
+                    <span style={{ color: '#ffffff', fontWeight: 700 }}>library</span>
+                  </div>
+                </div>
+
+                {/* H2 */}
+                <h2 style={{
+                  fontSize: 'clamp(26px, 2.6vw, 36px)', fontWeight: 800,
+                  lineHeight: 1.12, letterSpacing: '-0.03em', color: '#ffffff', margin: '0 0 18px',
+                }}>
+                  <span style={{ color: '#D4A017' }}>Every provider</span><br />
+                  already connected.
+                </h2>
+
+                {/* Body */}
+                <p style={{ fontSize: 15, lineHeight: 1.78, color: 'rgba(255,255,255,0.45)', margin: '0 0 30px' }}>
+                  Inherit the full network on day one — credentialed clinicians, 50-state licensing,
+                  accredited compounding pharmacies, and DEA-registered providers. No recruiting,
+                  no credentialing overhead. Just API calls.
+                </p>
+
+                {/* Divider */}
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '0 0 30px' }} />
+
+                {/* 2 × 2 stat grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '22px 28px' }}>
+                  {[
+                    { value: '10,000+', label: 'Credentialed Clinicians' },
+                    { value: '50',      label: 'States Covered'          },
+                    { value: '200+',    label: 'Partner Pharmacies'      },
+                    { value: '0 days',  label: 'to Credential'           },
+                  ].map(({ value, label }) => (
+                    <div key={label}>
+                      <p style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff', margin: '0 0 5px', lineHeight: 1 }}>{value}</p>
+                      <p style={{ fontSize: 11.5, fontWeight: 600, color: 'rgba(255,255,255,0.35)', margin: 0, letterSpacing: '0.02em' }}>{label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </FadeUp>
+          </div>
+        </section>
+
+        {/* ── Placeholder: coming soon ─────────────────────────────────────── */}
+        <section style={{
+          background: '#E8EAEC',
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          gap: 16,
+        }}>
+          <p style={{
+            fontSize: 13, fontWeight: 700, letterSpacing: '0.22em',
+            textTransform: 'uppercase',
+            color: '#B8BABD',
+            textShadow: '2px 2px 4px rgba(13,39,80,0.12), -1px -1px 3px rgba(255,255,255,0.95)',
+            margin: 0,
+          }}>
+            next sections
+          </p>
+          <p style={{
+            fontSize: 'clamp(52px, 8vw, 100px)', fontWeight: 800, letterSpacing: '-0.04em',
+            color: '#E8EAEC',
+            textShadow: '6px 6px 14px rgba(13,39,80,0.18), -4px -4px 10px rgba(255,255,255,0.92)',
+            margin: 0, lineHeight: 1,
+          }}>
+            coming soon
+          </p>
+        </section>
+
         {/* ── CTA + Footer ─────────────────────────────────────────────────── */}
         <section
           ref={footerRef}
           style={{ background: '#1F1F22', position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '80vh' }}
         >
-          {/* Left — cube floats here (no z-index: canvas at z:2 paints above) */}
-          <div />
+          {/* Left — footer cube, self-contained */}
+          <div style={{ position: 'relative' }}>
+            <FooterCube />
+          </div>
 
           {/* Right — copy above canvas, left-aligned, vertically centered */}
           <div style={{ position: 'relative', zIndex: 5, padding: '80px 80px 100px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', textAlign: 'left' }}>
@@ -1313,25 +1360,20 @@ export default function HomePage() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
                 <a
                   href="/login"
+                  className="btn-login"
                   style={{
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     borderRadius: 12, fontSize: 14, fontWeight: 700, padding: '14px 32px',
-                    textDecoration: 'none', border: 'none',
-                    color: 'rgba(255,255,255,0.65)',
-                    background: '#1F1F22',
-                    boxShadow: '8px 8px 22px rgba(0,0,0,0.55), -5px -5px 14px rgba(255,255,255,0.05)',
                   }}
                 >
                   Login
                 </a>
                 <a
                   href="/demo"
+                  className="btn-demo"
                   style={{
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     borderRadius: 12, fontSize: 14, fontWeight: 700, padding: '14px 32px',
-                    textDecoration: 'none',
-                    background: '#D4A017', color: '#1A1200',
-                    boxShadow: '8px 8px 22px rgba(0,0,0,0.50), -5px -5px 14px rgba(255,255,255,0.05)',
                   }}
                 >
                   Book a demo →
@@ -1362,8 +1404,13 @@ export default function HomePage() {
                 </a>
               ))}
             </div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>
-              © 2026 RX Library. All rights reserved.
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              © 2026
+              <span style={{ letterSpacing: '-0.03em' }}>
+                <span style={{ fontWeight: 400 }}>rx</span>
+                <span style={{ fontWeight: 700 }}>library</span>
+              </span>
+              All rights reserved.
             </div>
           </div>
         </section>
