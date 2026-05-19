@@ -248,23 +248,15 @@ export function NarrativeCube({ heroRef, section2Ref, section3Ref, section4Ref, 
         : window.innerHeight * 0.30;
       const s2T  = section2Ref.current ? docTop(section2Ref.current)  : hBot + 600;
       const s3T  = section3Ref.current ? docTop(section3Ref.current)  : s2T + 900;
-      const s4T  = section4Ref.current ? docTop(section4Ref.current)  : s3T + 900;
-      const s5T  = section5Ref.current ? docTop(section5Ref.current)  : s4T + 1100;
-      const s6T  = footerRef.current   ? docTop(footerRef.current)    : s5T + 2000;
-      // KF 3 fires when section 4 top enters the viewport (70% from top)
-      // KF 3 (Testimonials) fires when section 4 top enters viewport 70% from top
-      const s4Mid = s4T - window.innerHeight * 0.7;
-      // KF 3 ends when section 4 bottom is 80% above the fold (early cutoff)
-      const s4Bot = s4T + (section4Ref.current?.offsetHeight ?? 1050);
-      const s4End = s4Bot - window.innerHeight * 0.8;
-      // KF 5 fires when footer top enters viewport 40% from top
-      const footerThresh = s6T - window.innerHeight * 0.4;
+      // KF 2 (White Label) is the last narrative beat.
+      // Cube hides once White Label has scrolled 50% past the fold.
+      const s3Bot = s3T + (section3Ref.current?.offsetHeight ?? 1200);
+      const s3End = s3Bot - window.innerHeight * 0.5;
 
       if (sy < hBot)                            return 0;
       if (sy < s3T - window.innerHeight * 0.6) return 1;
-      if (sy < s4Mid)                           return 2;
-      if (sy < s4End)                           return 3;  // Testimonials floor scatter
-      return 4;  // Care Network + Footer: narrative cube stays off-screen
+      if (sy < s3End)                           return 2;  // White Label — last beat
+      return 4;  // cube off-screen for remainder of page
     }
 
     // ── Face-rotation animation (KF 1 — orbital section) ─────────────────────

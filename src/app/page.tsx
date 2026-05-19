@@ -199,6 +199,63 @@ const TRACKING_STEPS = [
   { label: 'Delivered',           color: '#10B981' },
 ];
 
+// ─── See It In Action role data ───────────────────────────────────────────────
+
+const SEE_IT_ROLES = [
+  {
+    label:    'Patient',
+    headline: 'Care that fits\nyour life.',
+    desc:     'Patients complete a quick intake, connect with a licensed provider, and receive their prescription — all from their phone. No waiting rooms, no paperwork, no friction.',
+  },
+  {
+    label:    'Clinician',
+    headline: 'Focus on care,\nnot admin.',
+    desc:     'Clinicians get a clean queue, full patient context, and one-click eRx — no switching tools, no paperwork, no time wasted between patients.',
+  },
+  {
+    label:    'Admin',
+    headline: 'Full visibility.\nTotal control.',
+    desc:     'Admins see every order, every provider, and every metric in one live dashboard. When something stalls, the system catches and fixes it before you notice.',
+  },
+] as const;
+
+// ─── Adapts personas ──────────────────────────────────────────────────────────
+
+const ADAPT_PERSONAS = [
+  {
+    key:       'employers',
+    label:     'Employers',
+    cardLabel: 'HR Dashboard',
+    headline:  'Benefits that flex\nwith your team.',
+    sub:       'Offer ICHRA-powered health benefits employees actually use. Configurable allowances, provider access, and pharmacy fulfillment — all on your terms.',
+    bullets:   ['ICHRA administration built in', 'Employee enrollment & eligibility', 'Claims and reimbursement workflows', 'White-labeled for your brand'],
+  },
+  {
+    key:       'providers',
+    label:     'Retail Providers',
+    cardLabel: 'Patient Queue',
+    headline:  'Vertically integrated\ncare delivery.',
+    sub:       'Launch a complete telemedicine experience — intake, clinical review, eRx, pharmacy fulfillment — branded for your practice and live in days.',
+    bullets:   ['Intake-to-prescription in one flow', 'Connected to national provider networks', 'eRx via RXNT, direct pharmacy routing', 'Async + video telehealth modes'],
+  },
+  {
+    key:       'pharmacies',
+    label:     'Pharmacies',
+    cardLabel: 'Fulfillment Pipeline',
+    headline:  'Digital-first pharmacy\ninfrastructure.',
+    sub:       'Expand your dispensing volume through embedded care infrastructure. Receive prescriptions from connected providers and fulfill seamlessly.',
+    bullets:   ['Direct eRx ingestion pipeline', 'Fulfillment tracking and status APIs', 'Multi-pharmacy routing and failover', 'Compliant order management'],
+  },
+  {
+    key:       'brands',
+    label:     'Brands',
+    cardLabel: 'Brand Config',
+    headline:  'Your brand.\nEnterprise-grade stack.',
+    sub:       'Deploy a fully branded healthcare ecosystem — patient portals, provider workflows, pharmacy network, compliance — without building the infrastructure.',
+    bullets:   ['Full white-label across all touchpoints', 'Multi-tenant architecture per brand', 'HIPAA-ready infrastructure included', 'Launch in weeks, not quarters'],
+  },
+] as const;
+
 // ─── Care network bento cards ─────────────────────────────────────────────────
 
 const CARE_CARDS = [
@@ -507,6 +564,96 @@ export default function HomePage() {
       rafIds.forEach(id => id && cancelAnimationFrame(id));
     };
   }, [careVisible]);
+
+  // ── Section 7: adapts persona auto-cycle ──────────────────────────────────
+  const [adaptPersona, setAdaptPersona]   = useState(0);
+  const [adaptProgress, setAdaptProgress] = useState(0);
+  const [adaptHovered, setAdaptHovered]   = useState(false);
+  const [adaptCardOut, setAdaptCardOut]   = useState(false);
+
+  useEffect(() => {
+    if (adaptHovered) return;
+    const DURATION = 5000;
+    const TICK     = 40;
+    let elapsed    = 0;
+    setAdaptProgress(0);
+    const t = setInterval(() => {
+      elapsed += TICK;
+      if (elapsed >= DURATION) {
+        clearInterval(t);
+        setAdaptCardOut(true);
+        setTimeout(() => {
+          setAdaptPersona(p => (p + 1) % ADAPT_PERSONAS.length);
+          setAdaptCardOut(false);
+        }, 220);
+      } else {
+        setAdaptProgress((elapsed / DURATION) * 100);
+      }
+    }, TICK);
+    return () => clearInterval(t);
+  }, [adaptHovered, adaptPersona]);
+
+  const switchAdaptPersona = (i: number) => {
+    if (i === adaptPersona) return;
+    setAdaptCardOut(true);
+    setTimeout(() => {
+      setAdaptPersona(i);
+      setAdaptCardOut(false);
+    }, 220);
+  };
+
+  // ── Section 8: Command Center story auto-advance ───────────────────────────
+  const [storyStep, setStoryStep] = useState(0);
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
+    const DURATIONS = [3200, 3200, 3200, 4500];
+    const advance = (current: number) => {
+      t = setTimeout(() => {
+        const next = (current + 1) % 4;
+        setStoryStep(next);
+        advance(next);
+      }, DURATIONS[current]!);
+    };
+    advance(0);
+    return () => clearTimeout(t);
+  }, []);
+
+  // ── Section "See It In Action" — sticky scroll ────────────────────────────
+  const seeItScrollRef    = useRef<HTMLDivElement>(null);
+  const prevSeeItRoleRef  = useRef(0);
+  const [seeItRole, setSeeItRole]         = useState(0);
+  const [seeItRotateX, setSeeItRotateX]   = useState(20);
+  const [seeItScale, setSeeItScale]       = useState(0.92);
+  const [seeItTilting, setSeeItTilting]   = useState(false);
+  const [seeItProgress, setSeeItProgress] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = seeItScrollRef.current;
+      if (!el) return;
+      const rect        = el.getBoundingClientRect();
+      const totalScroll = el.offsetHeight - window.innerHeight;
+      const scrolled    = Math.max(0, -rect.top);
+      const progress    = Math.min(1, scrolled / totalScroll);
+      setSeeItProgress(progress);
+
+      // Initial tilt-in: 20→0 over first 20% of scroll
+      const tiltP = Math.min(1, progress / 0.20);
+      setSeeItRotateX(20 * (1 - tiltP));
+      setSeeItScale(0.92 + 0.08 * tiltP);
+
+      // Role: 0→1→2 at 33%/66%
+      const newRole = progress < 0.33 ? 0 : progress < 0.66 ? 1 : 2;
+      if (newRole !== prevSeeItRoleRef.current) {
+        prevSeeItRoleRef.current = newRole;
+        setSeeItTilting(true);
+        setTimeout(() => setSeeItTilting(false), 750);
+      }
+      setSeeItRole(newRole);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
     <div style={{ background: '#080808', minHeight: '100vh' }}>
@@ -1160,126 +1307,6 @@ export default function HomePage() {
           </div>{/* end carousel zIndex wrapper */}
         </section>
 
-        {/* ── Section 4: Testimonials ──────────────────────────────────────── */}
-        <section
-          ref={section4Ref}
-          style={{
-            background: '#E8EAEC',
-            position: 'relative',
-            overflow: 'hidden',
-            minHeight: '100vh',
-            display: 'grid',
-            gridTemplateColumns: '1000px 1fr',
-          }}
-        >
-          {/* Left — copy. z-index 5 above canvas. */}
-          <div style={{
-            position: 'relative',
-            zIndex: 5,
-            display: 'flex',
-            alignItems: 'flex-start',
-            padding: '100px 40px 100px 80px',
-          }}>
-            <FadeUp>
-              <div>
-                <p style={{
-                  color: '#D4A017', fontSize: 10, fontWeight: 800,
-                  letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16,
-                }}>
-                  Testimonials
-                </p>
-                <h2 style={{
-                  fontSize: 'clamp(38px, 4.2vw, 64px)', fontWeight: 800,
-                  lineHeight: 1.06, letterSpacing: '-0.03em', margin: '0 0 20px',
-                }}>
-                  <span style={{ color: '#D4A017' }}>Builders ship.</span>
-                  <br />
-                  <span style={{ color: '#111111' }}>Partners scale.</span>
-                </h2>
-                <p style={{ fontSize: 16, lineHeight: 1.7, color: '#888', margin: 0 }}>
-                  From developers to pharmacy operators — here's what the network says.
-                </p>
-              </div>
-            </FadeUp>
-          </div>
-
-          {/* Right — testimonial carousel. No z-index: cube floats above. */}
-          <div style={{ position: 'relative' }}>
-            <div className="carousel-track" style={{
-              position: 'absolute',
-              top: -200, bottom: -200, left: -20, right: -60,
-              transform: 'rotate(-8deg)',
-              transformOrigin: 'center right',
-              display: 'grid',
-              gridTemplateColumns: '240px 240px 240px',
-              gap: 12,
-              alignItems: 'start',
-              justifyContent: 'end',
-            }}>
-
-              {[
-                { delay: undefined, duration: '28s' },
-                { delay: '-17s',    duration: '36s' },
-                { delay: '-9s',     duration: '31s' },
-              ].map(({ delay, duration }, col) => (
-                <div key={col} style={{ animation: `card-scroll-up ${duration} linear infinite`, animationDelay: delay, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => {
-                    const typeStyle = TESTIMONIAL_TYPE_COLORS[t.type];
-                    return (
-                      <div key={i} style={{
-                        background: '#1C1C1C',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        borderRadius: 14,
-                        padding: '24px 22px',
-                        minHeight: 320,
-                        flexShrink: 0,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                      }}>
-                        {/* Top */}
-                        <div>
-                          {/* Type pill */}
-                          <span style={{
-                            display: 'inline-block',
-                            fontSize: 9, fontWeight: 700,
-                            letterSpacing: '0.1em', textTransform: 'uppercase',
-                            background: typeStyle.bg, color: typeStyle.text,
-                            padding: '3px 9px', borderRadius: 5, marginBottom: 18,
-                          }}>
-                            {TESTIMONIAL_TYPE_LABELS[t.type]}
-                          </span>
-                          {/* Quote mark */}
-                          <p style={{ fontSize: 28, lineHeight: 1, color: 'rgba(255,255,255,0.10)', margin: '0 0 8px', fontFamily: 'Georgia, serif', fontWeight: 900 }}>"</p>
-                          {/* Quote text */}
-                          <p style={{ fontSize: 14, lineHeight: 1.65, color: 'rgba(255,255,255,0.78)', margin: 0, fontStyle: 'italic' }}>
-                            {t.quote}
-                          </p>
-                        </div>
-                        {/* Author */}
-                        <div style={{
-                          marginTop: 20,
-                          paddingTop: 16,
-                          borderTop: '1px solid rgba(255,255,255,0.07)',
-                        }}>
-                          <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.88)', margin: '0 0 3px' }}>
-                            {t.name}
-                          </p>
-                          <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.35)', margin: 0 }}>
-                            {t.role} · {t.company}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-
-            </div>
-          </div>
-
-        </section>
-
         {/* ── Section 5: Care Network ───────────────────────────────────────────── */}
         <section
           ref={section5Ref}
@@ -1710,33 +1737,1057 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Placeholder: coming soon ─────────────────────────────────────── */}
-        <section style={{
-          background: '#E8EAEC',
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          gap: 16,
-        }}>
-          <p style={{
-            fontSize: 13, fontWeight: 700, letterSpacing: '0.22em',
-            textTransform: 'uppercase',
-            color: '#B8BABD',
-            textShadow: '2px 2px 4px rgba(13,39,80,0.12), -1px -1px 3px rgba(255,255,255,0.95)',
-            margin: 0,
-          }}>
-            next sections
-          </p>
-          <p style={{
-            fontSize: 'clamp(52px, 8vw, 100px)', fontWeight: 800, letterSpacing: '-0.04em',
-            color: '#E8EAEC',
-            textShadow: '6px 6px 14px rgba(13,39,80,0.18), -4px -4px 10px rgba(255,255,255,0.92)',
-            margin: 0, lineHeight: 1,
-          }}>
-            coming soon
-          </p>
+        {/* ── Section: See It In Action ────────────────────────────────────── */}
+        <section style={{ background: '#E8EAEC' }}>
+          <style>{`
+            @keyframes role-tilt-reveal {
+              0%   { transform: perspective(1400px) rotateX(0deg)  scale(1);    }
+              28%  { transform: perspective(1400px) rotateX(14deg) scale(0.97); }
+              100% { transform: perspective(1400px) rotateX(0deg)  scale(1);    }
+            }
+            .role-tilt { animation: role-tilt-reveal 0.75s cubic-bezier(0.22,1,0.36,1) forwards; }
+            @keyframes role-copy-in {
+              from { opacity: 0; transform: translateY(14px); }
+              to   { opacity: 1; transform: translateY(0); }
+            }
+            .role-copy-in { animation: role-copy-in 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+          `}</style>
+
+          <div ref={seeItScrollRef} style={{ height: '320vh', position: 'relative' }}>
+            <div style={{
+              position: 'sticky', top: 0, height: '100vh',
+              display: 'flex', flexDirection: 'column',
+              padding: '52px 80px 48px', boxSizing: 'border-box',
+            }}>
+
+              {/* ── Header — always visible ── */}
+              <div style={{ marginBottom: 32 }}>
+                <p style={{ color: '#D4A017', fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '0 0 12px' }}>
+                  See It In Action
+                </p>
+                <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-0.03em', color: '#111827', margin: 0 }}>
+                  Built for <span style={{ color: '#FEC944' }}>every role</span> in the care chain.
+                </h2>
+              </div>
+
+              {/* ── Card (60%) + right content (40%) ── */}
+              <div style={{ display: 'flex', gap: 48, flex: 1, minHeight: 0 }}>
+
+                {/* Browser card — 60% width, natural image height */}
+                <div
+                  key={seeItTilting ? `tilt-${seeItRole}` : 'idle'}
+                  className={seeItTilting ? 'role-tilt' : undefined}
+                  style={{
+                    width: '60%', flexShrink: 0,
+                    borderRadius: 16,
+                    background: '#16161A',
+                    boxShadow: '0 0 0 1px rgba(255,255,255,0.07), 16px 16px 48px rgba(0,0,0,0.45), -6px -6px 20px rgba(255,255,255,0.55)',
+                    overflow: 'hidden',
+                    alignSelf: 'flex-start',
+                    maxHeight: 'calc(100vh - 180px)',
+                    position: 'relative',
+                    transform: seeItTilting ? undefined : `perspective(1400px) rotateX(${seeItRotateX}deg) scale(${seeItScale})`,
+                  }}
+                >
+                  {/* Chrome bar */}
+                  <div style={{
+                    background: '#111113', padding: '10px 16px',
+                    display: 'flex', alignItems: 'center', gap: 7,
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                    {['#EF4444', '#FEC944', '#10B981'].map((c) => (
+                      <span key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c, opacity: 0.55 }} />
+                    ))}
+                    <div style={{
+                      flex: 1, maxWidth: 220, margin: '0 auto', height: 19, borderRadius: 5,
+                      background: '#1F1F22',
+                      boxShadow: 'inset 2px 2px 4px rgba(0,0,0,0.6), inset -1px -1px 3px rgba(255,255,255,0.03)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', fontWeight: 500 }}>app.rxlibrary.com</span>
+                    </div>
+                  </div>
+                  {/* Images — natural width, stacked */}
+                  <div style={{ position: 'relative' }}>
+                    {['/patient-preview.png', '/clinician-preview.png', '/dashboard-preview.png'].map((src, i) => (
+                      <img key={src} src={src} alt="" style={{
+                        width: '100%', display: 'block',
+                        position: i === 0 ? 'relative' : 'absolute',
+                        top: 0, left: 0,
+                        opacity: seeItRole === i ? 1 : 0,
+                        transition: 'opacity 0.55s ease',
+                        transform: i === 0 ? 'scale(1.015)' : undefined,
+                      }} />
+                    ))}
+                  </div>
+                  {/* Bottom fade — masks image cutoff at maxHeight */}
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    height: '28%', pointerEvents: 'none',
+                    background: 'linear-gradient(to bottom, transparent, #E8EAEC)',
+                  }} />
+                </div>
+
+                {/* Right content panel */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 0 }}>
+
+                  {/* Role copy — remounts on change to replay animation */}
+                  <div key={`role-copy-${seeItRole}`} className="role-copy-in">
+                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#D4A017', margin: '0 0 18px', opacity: 0.9 }}>
+                      {SEE_IT_ROLES[seeItRole]!.label}
+                    </p>
+                    <h3 style={{
+                      fontSize: 'clamp(28px, 3vw, 44px)', fontWeight: 800, lineHeight: 1.06,
+                      letterSpacing: '-0.03em', color: '#111827', margin: '0 0 24px',
+                    }}>
+                      {seeItRole === 0 && <>Care that fits<br /><span style={{ color: '#FEC944' }}>your life.</span></>}
+                      {seeItRole === 1 && <>Focus on <span style={{ color: '#FEC944' }}>care,</span><br />not admin.</>}
+                      {seeItRole === 2 && <>Full visibility.<br /><span style={{ color: '#FEC944' }}>Total control.</span></>}
+                    </h3>
+                    <p style={{ fontSize: 16, lineHeight: 1.8, color: '#555', margin: 0, fontWeight: 500 }}>
+                      {SEE_IT_ROLES[seeItRole]!.desc}
+                    </p>
+                  </div>
+
+                  {/* 01 / 02 / 03 progress stepper */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                    {SEE_IT_ROLES.map((r, i) => {
+                      const active   = seeItRole === i;
+                      const done     = seeItRole > i;
+                      const segStart = i / 3;
+                      const segEnd   = (i + 1) / 3;
+                      const segPct   = done ? 1 : active ? Math.min(1, (seeItProgress - segStart) / (segEnd - segStart)) : 0;
+                      return (
+                        <div key={r.label} style={{ display: 'flex', alignItems: 'center', flex: i < 2 ? 1 : 'none' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start' }}>
+                            <span style={{
+                              fontSize: 10, fontWeight: 800, letterSpacing: '0.12em',
+                              color: active ? '#D4A017' : done ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.15)',
+                              transition: 'color 0.4s ease',
+                            }}>
+                              {String(i + 1).padStart(2, '0')}
+                            </span>
+                            <span style={{
+                              fontSize: 12, fontWeight: 700,
+                              color: active ? '#111827' : done ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.2)',
+                              transition: 'color 0.4s ease',
+                            }}>
+                              {r.label}
+                            </span>
+                          </div>
+                          {i < 2 && (
+                            <div style={{ flex: 1, height: 1, margin: '0 16px', background: 'rgba(13,39,80,0.10)', position: 'relative', overflow: 'hidden' }}>
+                              <div style={{
+                                position: 'absolute', top: 0, left: 0, bottom: 0,
+                                width: `${segPct * 100}%`,
+                                background: '#FEC944',
+                                transition: 'width 0.1s linear',
+                              }} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── When something stalls: Alert → Resolution story ─────────── */}
+          <div style={{ padding: '80px 80px 100px', boxSizing: 'border-box' }}>
+            <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+
+              <div style={{ marginBottom: 40 }}>
+                <p style={{ color: '#D4A017', fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '0 0 12px' }}>
+                  When something stalls
+                </p>
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 40 }}>
+                  <h2 style={{ fontSize: 'clamp(28px, 3vw, 44px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-0.03em', color: '#111827', margin: 0 }}>
+                    From stall to resolved —<br /><span style={{ color: '#FEC944' }}>automatically.</span>
+                  </h2>
+                  <p style={{ fontSize: 15, lineHeight: 1.75, color: '#888', margin: 0, maxWidth: 380 }}>
+                    rxlibrary monitors every order in real time. When a consult stalls, the system catches it, flags it, and fixes it — with zero manual steps.
+                  </p>
+                </div>
+              </div>
+
+              {/* 4 story cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+
+                {/* ── Card 0: Stall Detected ── */}
+                <div
+                  className={storyStep === 0 ? 'story-card-active' : undefined}
+                  style={{
+                    borderRadius: 20, background: '#E8EAEC', padding: '24px 20px',
+                    boxShadow: '8px 8px 22px rgba(13,39,80,0.14), -6px -6px 18px rgba(255,255,255,0.82)',
+                    border: '1.5px solid transparent',
+                    transition: 'box-shadow 0.4s ease, opacity 0.4s ease',
+                    opacity: storyStep === 0 ? 1 : 0.55,
+                    display: 'flex', flexDirection: 'column', gap: 0,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AAAAAA', margin: 0 }}>
+                      Stall Detected
+                    </p>
+                    <div
+                      className={storyStep === 0 ? 'dot-blip-red' : undefined}
+                      style={{ width: 10, height: 10, borderRadius: '50%', background: '#EF4444', boxShadow: '2px 2px 5px rgba(239,68,68,0.3), -1px -1px 3px rgba(255,255,255,0.5)' }}
+                    />
+                  </div>
+                  <div style={{ padding: '12px 14px', borderRadius: 12, background: '#E8EAEC', boxShadow: 'inset 3px 3px 7px rgba(13,39,80,0.10), inset -2px -2px 5px rgba(255,255,255,0.88)', marginBottom: 14 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1C', margin: '0 0 3px' }}>Marcus Torres</p>
+                    <p style={{ fontSize: 10, color: '#AAAAAA', margin: 0 }}>Consult overdue · 47m</p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'auto' }}>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
+                      background: '#E8EAEC', color: '#EF4444',
+                      boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                    }}>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#EF4444' }} />
+                      Stalled
+                    </span>
+                  </div>
+                  <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(13,39,80,0.07)' }}>
+                    <p style={{ fontSize: 10, color: '#BBBBBB', margin: 0 }}>Provider unavailable</p>
+                  </div>
+                </div>
+
+                {/* ── Card 1: Auto-Flagged ── */}
+                <div
+                  className={storyStep === 1 ? 'story-card-active' : undefined}
+                  style={{
+                    borderRadius: 20, background: '#E8EAEC', padding: '24px 20px',
+                    boxShadow: '8px 8px 22px rgba(13,39,80,0.14), -6px -6px 18px rgba(255,255,255,0.82)',
+                    border: '1.5px solid transparent',
+                    transition: 'box-shadow 0.4s ease, opacity 0.4s ease',
+                    opacity: storyStep === 1 ? 1 : 0.55,
+                    display: 'flex', flexDirection: 'column', gap: 0,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AAAAAA', margin: 0 }}>
+                      Auto-Flagged
+                    </p>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FEC944', boxShadow: '2px 2px 5px rgba(212,160,23,0.3), -1px -1px 3px rgba(255,255,255,0.5)' }} />
+                  </div>
+                  <div key={`alert2-${storyStep}`} style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                    {[
+                      { text: 'Stall threshold exceeded',   delay: '0ms'   },
+                      { text: 'Clinician unavailable',       delay: '180ms' },
+                      { text: 'Escalating automatically',    delay: '360ms' },
+                    ].map(({ text, delay }) => (
+                      <div
+                        key={text}
+                        className={storyStep === 1 ? 'alert-row' : undefined}
+                        style={{
+                          animationDelay: delay,
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '9px 12px', borderRadius: 10,
+                          background: '#E8EAEC',
+                          boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                          opacity: storyStep === 1 ? undefined : 0.5,
+                        }}
+                      >
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#FEC944', flexShrink: 0 }} />
+                        <p style={{ fontSize: 11, fontWeight: 600, color: '#555', margin: 0 }}>{text}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(13,39,80,0.07)' }}>
+                    <p style={{ fontSize: 10, color: '#BBBBBB', margin: 0 }}>0 manual steps required</p>
+                  </div>
+                </div>
+
+                {/* ── Card 2: Reassigned ── */}
+                <div
+                  className={storyStep === 2 ? 'story-card-active' : undefined}
+                  style={{
+                    borderRadius: 20, background: '#E8EAEC', padding: '24px 20px',
+                    boxShadow: '8px 8px 22px rgba(13,39,80,0.14), -6px -6px 18px rgba(255,255,255,0.82)',
+                    border: '1.5px solid transparent',
+                    transition: 'box-shadow 0.4s ease, opacity 0.4s ease',
+                    opacity: storyStep === 2 ? 1 : 0.55,
+                    display: 'flex', flexDirection: 'column', gap: 0,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AAAAAA', margin: 0 }}>
+                      Reassigned
+                    </p>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FEC944', boxShadow: '2px 2px 5px rgba(212,160,23,0.3), -1px -1px 3px rgba(255,255,255,0.5)' }} />
+                  </div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1C', margin: '0 0 12px' }}>Marcus Torres</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
+                      background: '#E8EAEC',
+                      boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                      color: storyStep >= 2 ? '#10B981' : '#EF4444',
+                      transition: 'color 0.8s ease 0.5s',
+                    }}>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: storyStep >= 2 ? '#10B981' : '#EF4444', transition: 'background 0.8s ease 0.5s' }} />
+                      {storyStep >= 2 ? 'Assigned' : 'Stalled'}
+                    </span>
+                  </div>
+                  <div style={{ padding: '10px 12px', borderRadius: 10, background: '#E8EAEC', boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)', flex: 1 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#1A1A1C', margin: '0 0 2px' }}>Dr. Sarah K.</p>
+                    <p style={{ fontSize: 10, color: '#AAAAAA', margin: 0 }}>Available · State licensed</p>
+                  </div>
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(13,39,80,0.07)' }}>
+                    <p style={{ fontSize: 10, color: '#BBBBBB', margin: 0 }}>Next-available match</p>
+                  </div>
+                </div>
+
+                {/* ── Card 3: Resolved ── */}
+                <div
+                  className={storyStep === 3 ? 'story-card-active' : undefined}
+                  style={{
+                    borderRadius: 20, background: '#E8EAEC', padding: '24px 20px',
+                    boxShadow: '8px 8px 22px rgba(13,39,80,0.14), -6px -6px 18px rgba(255,255,255,0.82)',
+                    border: '1.5px solid transparent',
+                    transition: 'box-shadow 0.4s ease, opacity 0.4s ease',
+                    opacity: storyStep === 3 ? 1 : 0.55,
+                    display: 'flex', flexDirection: 'column', gap: 0,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: storyStep === 3 ? '#10B981' : '#AAAAAA', margin: 0, transition: 'color 0.4s ease' }}>
+                      {storyStep === 3 ? '✓ Resolved · 3 min' : 'Resolved'}
+                    </p>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: storyStep === 3 ? '0 0 8px rgba(16,185,129,0.6), 2px 2px 5px rgba(16,185,129,0.3)' : '2px 2px 5px rgba(16,185,129,0.2)', transition: 'box-shadow 0.4s ease' }} />
+                  </div>
+                  <div
+                    key={`check2-${storyStep}`}
+                    className={storyStep === 3 ? 'story-pop' : undefined}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}
+                  >
+                    <div style={{
+                      width: 52, height: 52, borderRadius: '50%',
+                      background: '#E8EAEC',
+                      boxShadow: storyStep === 3
+                        ? '0 0 0 3px rgba(16,185,129,0.3), 6px 6px 16px rgba(16,185,129,0.2), -4px -4px 12px rgba(255,255,255,0.9)'
+                        : '4px 4px 10px rgba(13,39,80,0.12), -3px -3px 8px rgba(255,255,255,0.88)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'box-shadow 0.5s ease',
+                    }}>
+                      <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
+                        <path d="M2 9l6 6L20 2" stroke={storyStep === 3 ? '#10B981' : '#CCCCCC'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'stroke 0.4s ease' }} />
+                      </svg>
+                    </div>
+                  </div>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5, alignSelf: 'flex-start',
+                    fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
+                    background: '#E8EAEC',
+                    boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                    color: '#10B981', marginBottom: 'auto',
+                  }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10B981' }} />
+                    Consult Scheduled
+                  </span>
+                  <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(13,39,80,0.07)' }}>
+                    <p style={{ fontSize: 10, color: '#BBBBBB', margin: 0 }}>0 delays · Fully automated</p>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Step progress indicator */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                {[0, 1, 2, 3].map((s) => (
+                  <div key={s} style={{ display: 'flex', alignItems: 'center', flex: s < 3 ? '1' : 'none' }}>
+                    <div style={{
+                      width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                      background: s <= storyStep ? '#FEC944' : '#E8EAEC',
+                      boxShadow: s <= storyStep
+                        ? '0 0 8px rgba(254,201,68,0.5), 2px 2px 4px rgba(13,39,80,0.12)'
+                        : 'inset 2px 2px 4px rgba(13,39,80,0.12), inset -1px -1px 3px rgba(255,255,255,0.88)',
+                      transition: 'background 0.4s ease, box-shadow 0.4s ease',
+                    }} />
+                    {s < 3 && (
+                      <div style={{ flex: 1, height: 2, background: '#E8EAEC', boxShadow: 'inset 1px 1px 2px rgba(13,39,80,0.10)', overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%', background: '#FEC944',
+                          width: s < storyStep ? '100%' : '0%',
+                          transition: 'width 0.6s ease',
+                        }} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          </div>
+
+        </section>
+
+        {/* ── Section 7: rxlibrary adapts ─────────────────────────────────── */}
+        <section
+          style={{ background: '#E8EAEC', padding: '120px 80px' }}
+          onMouseEnter={() => setAdaptHovered(true)}
+          onMouseLeave={() => setAdaptHovered(false)}
+        >
+          <style>{`
+            @keyframes adapt-in {
+              from { opacity: 0; transform: translateY(12px); }
+              to   { opacity: 1; transform: translateY(0); }
+            }
+            .adapt-in { animation: adapt-in 0.45s cubic-bezier(0.22,1,0.36,1) both; }
+            @keyframes adapt-bullet-in {
+              from { opacity: 0; transform: translateX(-10px); }
+              to   { opacity: 1; transform: translateX(0); }
+            }
+            .adapt-bullet { animation: adapt-bullet-in 0.45s cubic-bezier(0.22,1,0.36,1) both; }
+          `}</style>
+
+          <div style={{ maxWidth: 1280, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
+
+            {/* ── Left: copy ──────────────────────────────────────────────── */}
+            <div>
+              <p style={{ color: '#D4A017', fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 20, margin: '0 0 20px' }}>
+                Built For Your World
+              </p>
+
+              {/* Headline — remount on persona change triggers adapt-in */}
+              <h2
+                key={`adapt-h-${adaptPersona}`}
+                className="adapt-in"
+                style={{ fontSize: 'clamp(32px, 3.8vw, 52px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-0.03em', color: '#111827', margin: '0 0 18px' }}
+              >
+                {ADAPT_PERSONAS[adaptPersona]!.headline.split('\n').map((line, i, arr) => (
+                  <span key={i} style={{ color: i === arr.length - 1 ? '#FEC944' : '#111827' }}>
+                    {line}{i < arr.length - 1 && <br />}
+                  </span>
+                ))}
+              </h2>
+
+              {/* Sub-copy */}
+              <p
+                key={`adapt-sub-${adaptPersona}`}
+                className="adapt-in"
+                style={{ fontSize: 15, lineHeight: 1.75, color: '#666', margin: '0 0 36px', maxWidth: 420, animationDelay: '0.06s' }}
+              >
+                {ADAPT_PERSONAS[adaptPersona]!.sub}
+              </p>
+
+              {/* Bullets — sequential fly-in */}
+              <div key={`adapt-bl-${adaptPersona}`} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 48 }}>
+                {ADAPT_PERSONAS[adaptPersona]!.bullets.map((b, i) => (
+                  <div
+                    key={b}
+                    className="adapt-bullet"
+                    style={{ animationDelay: `${i * 110}ms`, display: 'flex', alignItems: 'center', gap: 12 }}
+                  >
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                      background: '#E8EAEC',
+                      boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.12), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <svg width="8" height="7" viewBox="0 0 10 9" fill="none">
+                        <path d="M1.5 4.5l2.5 2.5 4.5-5" stroke="#D4A017" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: '#555', margin: 0 }}>{b}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Persona pills + progress bar */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {ADAPT_PERSONAS.map((persona, i) => (
+                    <button
+                      key={persona.key}
+                      onClick={() => switchAdaptPersona(i)}
+                      style={{
+                        fontSize: 11, fontWeight: 700, padding: '7px 16px', borderRadius: 999,
+                        border: 'none', cursor: 'pointer',
+                        background: i === adaptPersona ? '#FEC944' : '#E8EAEC',
+                        color: i === adaptPersona ? '#1A1200' : 'rgba(0,0,0,0.35)',
+                        boxShadow: i === adaptPersona
+                          ? '4px 4px 10px rgba(13,39,80,0.18), -2px -2px 6px rgba(255,255,255,0.7)'
+                          : 'inset 2px 2px 5px rgba(13,39,80,0.12), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                        transition: 'all 0.25s ease',
+                      }}
+                    >
+                      {persona.label}
+                    </button>
+                  ))}
+                </div>
+                {/* Progress bar */}
+                <div style={{ height: 2, borderRadius: 1, background: 'rgba(13,39,80,0.10)', overflow: 'hidden', maxWidth: 340 }}>
+                  <div style={{
+                    height: '100%', width: `${adaptProgress}%`,
+                    background: 'linear-gradient(to right, #FEC944, #D4A017)',
+                    borderRadius: 1, transition: 'width 0.04s linear',
+                  }} />
+                </div>
+              </div>
+            </div>
+
+            {/* ── Right: morphing UI card ──────────────────────────────────── */}
+            <div style={{
+              opacity: adaptCardOut ? 0 : 1,
+              transform: adaptCardOut ? 'scale(0.96) translateY(8px)' : 'scale(1) translateY(0)',
+              transition: 'opacity 0.22s ease, transform 0.22s ease',
+            }}>
+              <div style={{
+                borderRadius: 24, background: '#1F1F22',
+                boxShadow: '10px 10px 28px rgba(0,0,0,0.6), -6px -6px 18px rgba(255,255,255,0.04)',
+                padding: '28px 26px',
+                border: '1px solid rgba(255,255,255,0.05)',
+              }}>
+                {/* Card header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
+                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+                    {ADAPT_PERSONAS[adaptPersona]!.cardLabel}
+                  </p>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }} />
+                    <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>live</span>
+                  </span>
+                </div>
+
+                {/* ── Employers: HR Dashboard ── */}
+                {adaptPersona === 0 && (
+                  <div>
+                    {/* 2 stat tiles */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 22 }}>
+                      {[
+                        { value: '124',  label: 'Enrolled Employees' },
+                        { value: '$280', label: 'Avg Allowance / mo'  },
+                      ].map(({ value, label }) => (
+                        <div key={label} style={{
+                          borderRadius: 14, padding: '16px 14px',
+                          background: '#1F1F22',
+                          boxShadow: 'inset 3px 3px 8px rgba(0,0,0,0.55), inset -3px -3px 7px rgba(255,255,255,0.04)',
+                        }}>
+                          <p style={{ fontSize: 24, fontWeight: 800, color: '#ffffff', margin: '0 0 4px', letterSpacing: '-0.03em' }}>{value}</p>
+                          <p style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)', margin: 0 }}>{label}</p>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Utilization bars */}
+                    <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', margin: '0 0 12px' }}>Benefit Utilization</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
+                      {[
+                        { label: 'Medical',   pct: 72, color: '#FEC944' },
+                        { label: 'Pharmacy',  pct: 58, color: '#4CAAFF' },
+                        { label: 'Vision',    pct: 41, color: '#7C6FFF' },
+                      ].map(({ label, pct, color }) => (
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', width: 56, flexShrink: 0 }}>{label}</span>
+                          <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2 }} />
+                          </div>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)', width: 28, textAlign: 'right' }}>{pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Recent */}
+                    <div style={{ paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
+                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>Sofia G. — $85 reimbursed · 2h ago</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Providers: Patient Queue ── */}
+                {adaptPersona === 1 && (
+                  <div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
+                      {[
+                        { name: 'Sofia García',   status: 'Consult',   color: '#3B82F6' },
+                        { name: 'Marcus Torres',  status: 'Intake',    color: '#FEC944' },
+                        { name: 'Ana Ruiz',       status: 'Rx Sent',   color: '#4CAAFF' },
+                        { name: 'John Park',      status: 'Delivered', color: '#10B981' },
+                      ].map(({ name, status, color }) => (
+                        <div key={name} style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '10px 14px', borderRadius: 12,
+                          background: '#1F1F22',
+                          boxShadow: 'inset 2px 2px 5px rgba(0,0,0,0.5), inset -2px -2px 4px rgba(255,255,255,0.04)',
+                        }}>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.75)', margin: 0 }}>{name}</p>
+                          <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                            fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                            background: '#1F1F22',
+                            boxShadow: 'inset 2px 2px 4px rgba(0,0,0,0.5), inset -1px -1px 3px rgba(255,255,255,0.04)',
+                            color,
+                          }}>
+                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                            {status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FEC944', flexShrink: 0 }} />
+                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>4 active · 2 pending clinical review</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Pharmacies: Fulfillment Pipeline ── */}
+                {adaptPersona === 2 && (
+                  <div>
+                    {/* Big number */}
+                    <div style={{ marginBottom: 22 }}>
+                      <p style={{ fontSize: 42, fontWeight: 800, color: '#ffffff', margin: 0, letterSpacing: '-0.04em', lineHeight: 1 }}>284</p>
+                      <p style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)', margin: '4px 0 0' }}>orders today</p>
+                    </div>
+                    {/* Funnel bars */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
+                      {[
+                        { label: 'Received',   count: 284, pct: 100, color: '#FEC944' },
+                        { label: 'Dispensed',  count: 261, pct: 92,  color: '#4CAAFF' },
+                        { label: 'Shipped',    count: 178, pct: 63,  color: '#7C6FFF' },
+                        { label: 'Delivered',  count: 152, pct: 54,  color: '#10B981' },
+                      ].map(({ label, count, pct, color }) => (
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', width: 60, flexShrink: 0 }}>{label}</span>
+                          <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2 }} />
+                          </div>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)', width: 28, textAlign: 'right' }}>{count}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAAFF', flexShrink: 0 }} />
+                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>eRx from RXNT · 3m ago</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Brands: Config Panel ── */}
+                {adaptPersona === 3 && (
+                  <div>
+                    {/* Fields */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+                      {[
+                        { label: 'Brand Name', value: 'PharmacyTime'      },
+                        { label: 'Domain',     value: 'pharmacytime.com'  },
+                      ].map(({ label, value }) => (
+                        <div key={label}>
+                          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', margin: '0 0 6px' }}>{label}</p>
+                          <div style={{
+                            padding: '9px 14px', borderRadius: 10,
+                            background: '#1F1F22',
+                            boxShadow: 'inset 2px 2px 5px rgba(0,0,0,0.55), inset -2px -2px 4px rgba(255,255,255,0.04)',
+                          }}>
+                            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.65)', margin: 0 }}>{value}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Color swatches */}
+                    <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', margin: '0 0 10px' }}>Primary Color</p>
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 22 }}>
+                      {['#FEC944', '#7C6FFF', '#4CAAFF'].map((c, i) => (
+                        <div key={c} style={{
+                          width: 28, height: 28, borderRadius: '50%', background: c,
+                          boxShadow: i === 0
+                            ? `0 0 0 2px rgba(255,255,255,0.2), 0 0 12px ${c}55`
+                            : '3px 3px 7px rgba(0,0,0,0.45), -2px -2px 5px rgba(255,255,255,0.04)',
+                          cursor: 'pointer',
+                        }} />
+                      ))}
+                    </div>
+                    {/* Preview pill */}
+                    <div style={{ marginBottom: 20 }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 7,
+                        padding: '7px 14px', borderRadius: 999,
+                        background: '#1F1F22',
+                        boxShadow: 'inset 2px 2px 5px rgba(0,0,0,0.55), inset -2px -2px 4px rgba(255,255,255,0.04)',
+                      }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FEC944' }} />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.65)' }}>PharmacyTime</span>
+                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>· running on</span>
+                        <span style={{ fontSize: 11, fontWeight: 700 }}><span style={{ color: '#FEC944', fontWeight: 400 }}>rx</span><span style={{ color: 'rgba(255,255,255,0.65)' }}>library</span></span>
+                      </span>
+                    </div>
+                    <div style={{ paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
+                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>Active · 12 brands configured</p>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* COMMAND CENTER DELETED */}
+        {false && <section style={{ background: '#E8EAEC', padding: '120px 80px' }}>
+          <style>{`
+            @keyframes dot-blip-red {
+              0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.0), 3px 3px 8px rgba(239,68,68,0.3), -2px -2px 5px rgba(255,255,255,0.5); }
+              50%       { box-shadow: 0 0 0 6px rgba(239,68,68,0.18), 0 0 14px rgba(239,68,68,0.45), 3px 3px 8px rgba(239,68,68,0.3), -2px -2px 5px rgba(255,255,255,0.5); }
+            }
+            .dot-blip-red   { animation: dot-blip-red   2.4s ease-in-out infinite; }
+            @keyframes alert-row-in {
+              from { opacity: 0; transform: translateX(-14px); }
+              to   { opacity: 1; transform: translateX(0); }
+            }
+            .alert-row { animation: alert-row-in 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+            @keyframes pill-to-green {
+              0%   { color: #EF4444; box-shadow: inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88); }
+              60%  { color: #FEC944; }
+              100% { color: #10B981; box-shadow: inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88); }
+            }
+            .pill-to-assigned { animation: pill-to-green 1s ease forwards; }
+            @keyframes story-pop {
+              0%   { transform: scale(0.85); opacity: 0; }
+              60%  { transform: scale(1.06); opacity: 1; }
+              100% { transform: scale(1);    opacity: 1; }
+            }
+            .story-pop { animation: story-pop 0.55s cubic-bezier(0.22,1,0.36,1) both; }
+            .story-card-active {
+              box-shadow: 8px 8px 22px rgba(13,39,80,0.18), -6px -6px 18px rgba(255,255,255,0.88), 0 0 0 1.5px rgba(254,201,68,0.5) !important;
+            }
+          `}</style>
+
+          <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+
+            {/* Header */}
+            <div style={{ marginBottom: 64 }}>
+              <p style={{ color: '#D4A017', fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '0 0 16px' }}>
+                Command Center
+              </p>
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 40 }}>
+                <h2 style={{ fontSize: 'clamp(32px, 3.8vw, 52px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-0.03em', color: '#111', margin: 0 }}>
+                  Full visibility.<br />Total control.
+                </h2>
+                <p style={{ fontSize: 15, lineHeight: 1.75, color: '#888', margin: 0, maxWidth: 420 }}>
+                  Every order, every patient, every metric — in one view. When something breaks, rxlibrary catches and fixes it before you notice.
+                </p>
+              </div>
+            </div>
+
+            {/* Dashboard screenshot */}
+            <div style={{ position: 'relative', marginBottom: 40 }}>
+              <div style={{ borderRadius: 20, overflow: 'hidden' }}>
+                <img
+                  src="/dashboard-preview.png"
+                  alt="rxlibrary admin dashboard"
+                  style={{ width: '100%', display: 'block' }}
+                />
+              </div>
+              {/* Bottom fade */}
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                height: '40%',
+                background: 'linear-gradient(to bottom, transparent, #E8EAEC)',
+                pointerEvents: 'none',
+              }} />
+            </div>
+
+            {/* 4 story cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+
+              {/* ── Card 0: Stall Detected ── */}
+              <div
+                className={storyStep === 0 ? 'story-card-active' : undefined}
+                style={{
+                  borderRadius: 20, background: '#E8EAEC', padding: '24px 20px',
+                  boxShadow: '8px 8px 22px rgba(13,39,80,0.14), -6px -6px 18px rgba(255,255,255,0.82)',
+                  border: '1.5px solid transparent',
+                  transition: 'box-shadow 0.4s ease, opacity 0.4s ease',
+                  opacity: storyStep === 0 ? 1 : 0.55,
+                  display: 'flex', flexDirection: 'column', gap: 0,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AAAAAA', margin: 0 }}>
+                    Stall Detected
+                  </p>
+                  <div
+                    className={storyStep === 0 ? 'dot-blip-red' : undefined}
+                    style={{ width: 10, height: 10, borderRadius: '50%', background: '#EF4444', boxShadow: '2px 2px 5px rgba(239,68,68,0.3), -1px -1px 3px rgba(255,255,255,0.5)' }}
+                  />
+                </div>
+                {/* Patient row */}
+                <div style={{ padding: '12px 14px', borderRadius: 12, background: '#E8EAEC', boxShadow: 'inset 3px 3px 7px rgba(13,39,80,0.10), inset -2px -2px 5px rgba(255,255,255,0.88)', marginBottom: 14 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1C', margin: '0 0 3px' }}>Marcus Torres</p>
+                  <p style={{ fontSize: 10, color: '#AAAAAA', margin: 0 }}>Consult overdue · 47m</p>
+                </div>
+                {/* Status */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'auto' }}>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
+                    background: '#E8EAEC', color: '#EF4444',
+                    boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                  }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#EF4444' }} />
+                    Stalled
+                  </span>
+                </div>
+                <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(13,39,80,0.07)' }}>
+                  <p style={{ fontSize: 10, color: '#BBBBBB', margin: 0 }}>Provider unavailable</p>
+                </div>
+              </div>
+
+              {/* ── Card 1: System Flags It ── */}
+              <div
+                className={storyStep === 1 ? 'story-card-active' : undefined}
+                style={{
+                  borderRadius: 20, background: '#E8EAEC', padding: '24px 20px',
+                  boxShadow: '8px 8px 22px rgba(13,39,80,0.14), -6px -6px 18px rgba(255,255,255,0.82)',
+                  border: '1.5px solid transparent',
+                  transition: 'box-shadow 0.4s ease, opacity 0.4s ease',
+                  opacity: storyStep === 1 ? 1 : 0.55,
+                  display: 'flex', flexDirection: 'column', gap: 0,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AAAAAA', margin: 0 }}>
+                    Auto-Flagged
+                  </p>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FEC944', boxShadow: '2px 2px 5px rgba(212,160,23,0.3), -1px -1px 3px rgba(255,255,255,0.5)' }} />
+                </div>
+                {/* Alert rows — slide in when active */}
+                <div key={`alert-${storyStep}`} style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                  {[
+                    { text: 'Stall threshold exceeded',   delay: '0ms'   },
+                    { text: 'Clinician unavailable',       delay: '180ms' },
+                    { text: 'Escalating automatically',    delay: '360ms' },
+                  ].map(({ text, delay }) => (
+                    <div
+                      key={text}
+                      className={storyStep === 1 ? 'alert-row' : undefined}
+                      style={{
+                        animationDelay: delay,
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '9px 12px', borderRadius: 10,
+                        background: '#E8EAEC',
+                        boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                        opacity: storyStep === 1 ? undefined : 0.5,
+                      }}
+                    >
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#FEC944', flexShrink: 0 }} />
+                      <p style={{ fontSize: 11, fontWeight: 600, color: '#555', margin: 0 }}>{text}</p>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(13,39,80,0.07)' }}>
+                  <p style={{ fontSize: 10, color: '#BBBBBB', margin: 0 }}>0 manual steps required</p>
+                </div>
+              </div>
+
+              {/* ── Card 2: Reassigned ── */}
+              <div
+                className={storyStep === 2 ? 'story-card-active' : undefined}
+                style={{
+                  borderRadius: 20, background: '#E8EAEC', padding: '24px 20px',
+                  boxShadow: '8px 8px 22px rgba(13,39,80,0.14), -6px -6px 18px rgba(255,255,255,0.82)',
+                  border: '1.5px solid transparent',
+                  transition: 'box-shadow 0.4s ease, opacity 0.4s ease',
+                  opacity: storyStep === 2 ? 1 : 0.55,
+                  display: 'flex', flexDirection: 'column', gap: 0,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AAAAAA', margin: 0 }}>
+                    Reassigned
+                  </p>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FEC944', boxShadow: '2px 2px 5px rgba(212,160,23,0.3), -1px -1px 3px rgba(255,255,255,0.5)' }} />
+                </div>
+                {/* Patient */}
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1C', margin: '0 0 12px' }}>Marcus Torres</p>
+                {/* Pill flips */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
+                    background: '#E8EAEC',
+                    boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                    color: storyStep >= 2 ? '#10B981' : '#EF4444',
+                    transition: 'color 0.8s ease 0.5s',
+                  }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: storyStep >= 2 ? '#10B981' : '#EF4444', transition: 'background 0.8s ease 0.5s' }} />
+                    {storyStep >= 2 ? 'Assigned' : 'Stalled'}
+                  </span>
+                </div>
+                {/* New provider */}
+                <div style={{ padding: '10px 12px', borderRadius: 10, background: '#E8EAEC', boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)', flex: 1 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#1A1A1C', margin: '0 0 2px' }}>Dr. Sarah K.</p>
+                  <p style={{ fontSize: 10, color: '#AAAAAA', margin: 0 }}>Available · State licensed</p>
+                </div>
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(13,39,80,0.07)' }}>
+                  <p style={{ fontSize: 10, color: '#BBBBBB', margin: 0 }}>Next-available match</p>
+                </div>
+              </div>
+
+              {/* ── Card 3: Resolved ── */}
+              <div
+                className={storyStep === 3 ? 'story-card-active' : undefined}
+                style={{
+                  borderRadius: 20, background: '#E8EAEC', padding: '24px 20px',
+                  boxShadow: '8px 8px 22px rgba(13,39,80,0.14), -6px -6px 18px rgba(255,255,255,0.82)',
+                  border: '1.5px solid transparent',
+                  transition: 'box-shadow 0.4s ease, opacity 0.4s ease',
+                  opacity: storyStep === 3 ? 1 : 0.55,
+                  display: 'flex', flexDirection: 'column', gap: 0,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: storyStep === 3 ? '#10B981' : '#AAAAAA', margin: 0, transition: 'color 0.4s ease' }}>
+                    {storyStep === 3 ? '✓ Resolved · 3 min' : 'Resolved'}
+                  </p>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981', boxShadow: storyStep === 3 ? '0 0 8px rgba(16,185,129,0.6), 2px 2px 5px rgba(16,185,129,0.3)' : '2px 2px 5px rgba(16,185,129,0.2)', transition: 'box-shadow 0.4s ease' }} />
+                </div>
+                {/* Big check */}
+                <div
+                  key={`check-${storyStep}`}
+                  className={storyStep === 3 ? 'story-pop' : undefined}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}
+                >
+                  <div style={{
+                    width: 52, height: 52, borderRadius: '50%',
+                    background: '#E8EAEC',
+                    boxShadow: storyStep === 3
+                      ? '0 0 0 3px rgba(16,185,129,0.3), 6px 6px 16px rgba(16,185,129,0.2), -4px -4px 12px rgba(255,255,255,0.9)'
+                      : '4px 4px 10px rgba(13,39,80,0.12), -3px -3px 8px rgba(255,255,255,0.88)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'box-shadow 0.5s ease',
+                  }}>
+                    <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
+                      <path d="M2 9l6 6L20 2" stroke={storyStep === 3 ? '#10B981' : '#CCCCCC'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'stroke 0.4s ease' }} />
+                    </svg>
+                  </div>
+                </div>
+                {/* Status */}
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5, alignSelf: 'flex-start',
+                  fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
+                  background: '#E8EAEC',
+                  boxShadow: 'inset 2px 2px 5px rgba(13,39,80,0.10), inset -2px -2px 4px rgba(255,255,255,0.88)',
+                  color: '#10B981', marginBottom: 'auto',
+                }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10B981' }} />
+                  Consult Scheduled
+                </span>
+                <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid rgba(13,39,80,0.07)' }}>
+                  <p style={{ fontSize: 10, color: '#BBBBBB', margin: 0 }}>0 delays · Fully automated</p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Step progress indicator */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+              {[0, 1, 2, 3].map((s) => (
+                <div key={s} style={{ display: 'flex', alignItems: 'center', flex: s < 3 ? '1' : 'none' }}>
+                  <div style={{
+                    width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                    background: s <= storyStep ? '#FEC944' : '#E8EAEC',
+                    boxShadow: s <= storyStep
+                      ? '0 0 8px rgba(254,201,68,0.5), 2px 2px 4px rgba(13,39,80,0.12)'
+                      : 'inset 2px 2px 4px rgba(13,39,80,0.12), inset -1px -1px 3px rgba(255,255,255,0.88)',
+                    transition: 'background 0.4s ease, box-shadow 0.4s ease',
+                  }} />
+                  {s < 3 && (
+                    <div style={{ flex: 1, height: 2, background: '#E8EAEC', boxShadow: 'inset 1px 1px 2px rgba(13,39,80,0.10)', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%', background: '#FEC944',
+                        width: s < storyStep ? '100%' : '0%',
+                        transition: 'width 0.6s ease',
+                      }} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </section>}
+
+        {/* ── Testimonials + CTA ───────────────────────────────────────────── */}
+        <section style={{ background: '#E8EAEC', padding: '120px 0 140px', overflow: 'hidden' }}>
+          <style>{`
+            @keyframes t-scroll-left {
+              from { transform: translateX(0); }
+              to   { transform: translateX(-50%); }
+            }
+            @keyframes t-scroll-right {
+              from { transform: translateX(-50%); }
+              to   { transform: translateX(0); }
+            }
+            .t-r1 { animation: t-scroll-left  44s linear infinite; display: flex; gap: 20px; width: max-content; }
+            .t-r2 { animation: t-scroll-right 58s linear infinite; display: flex; gap: 20px; width: max-content; }
+            .t-wrapper:hover .t-r1,
+            .t-wrapper:hover .t-r2 { animation-play-state: paused; }
+          `}</style>
+
+          {/* Header — padded */}
+          <div style={{ padding: '0 80px', marginBottom: 72, textAlign: 'center' }}>
+            <p style={{
+              fontSize: 10, fontWeight: 800, letterSpacing: '0.18em',
+              textTransform: 'uppercase', margin: '0 0 20px',
+              color: '#D4A017',
+            }}>
+              Don&apos;t take our word for it
+            </p>
+            <h2 style={{
+              fontSize: 'clamp(52px, 8vw, 100px)', fontWeight: 800,
+              letterSpacing: '-0.04em', lineHeight: 1, margin: 0,
+              color: '#E8EAEC',
+              textShadow: '6px 6px 14px rgba(13,39,80,0.18), -4px -4px 10px rgba(255,255,255,0.92)',
+            }}>
+              The network<br />speaks.
+            </h2>
+          </div>
+
+          {/* 2-row carousel — full-width, no side padding */}
+          <div className="t-wrapper" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {([
+              { cls: 't-r1', offset: 0 },
+              { cls: 't-r2', offset: 5 },
+            ] as const).map(({ cls, offset }) => {
+              const items = [...TESTIMONIALS.slice(offset), ...TESTIMONIALS.slice(0, offset)];
+              const doubled = [...items, ...items];
+              return (
+                <div key={cls} className={cls}>
+                  {doubled.map((t, idx) => (
+                    <div key={idx} style={{
+                      width: 300, flexShrink: 0,
+                      borderRadius: 20, background: '#E8EAEC', padding: '24px 22px',
+                      boxShadow: '8px 8px 22px rgba(13,39,80,0.14), -6px -6px 18px rgba(255,255,255,0.82)',
+                      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                      minHeight: 190,
+                    }}>
+                      <div>
+                        <p style={{ fontSize: 22, lineHeight: 1, color: 'rgba(13,39,80,0.10)', margin: '0 0 8px', fontFamily: 'Georgia, serif', fontWeight: 900 }}>"</p>
+                        <p style={{ fontSize: 13, lineHeight: 1.65, color: '#444', margin: 0, fontStyle: 'italic' }}>
+                          {t.quote}
+                        </p>
+                      </div>
+                      <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(13,39,80,0.07)' }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#1A1A1C', margin: '0 0 2px' }}>{t.name}</p>
+                        <p style={{ fontSize: 10, fontWeight: 500, color: '#AAAAAA', margin: 0 }}>{t.role} · {t.company}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+
+
         </section>
 
         {/* ── CTA + Footer ─────────────────────────────────────────────────── */}
@@ -1752,28 +2803,22 @@ export default function HomePage() {
           {/* Right — copy above canvas, left-aligned, vertically centered */}
           <div style={{ position: 'relative', zIndex: 5, padding: '80px 80px 100px 40px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start', textAlign: 'left' }}>
             <FadeUp>
-              {/* Compliance badges */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 40 }}>
-                {['HIPAA', 'SOC2', 'FHIR R4', 'API-first', 'AWS ECS Fargate', 'Enterprise-ready'].map((badge) => (
-                  <div
-                    key={badge}
-                    style={{
-                      borderRadius: 999, padding: '5px 14px', fontSize: 11, fontWeight: 700,
-                      color: 'rgba(255,255,255,0.35)',
-                      background: '#1F1F22',
-                      boxShadow: 'inset 3px 3px 7px rgba(0,0,0,0.45), inset -3px -3px 7px rgba(255,255,255,0.04)',
-                    }}
-                  >
-                    {badge}
-                  </div>
-                ))}
-              </div>
+              {/* Eyebrow */}
+              <p style={{
+                fontSize: 10, fontWeight: 800, letterSpacing: '0.18em',
+                textTransform: 'uppercase', color: '#D4A017', margin: '0 0 20px',
+              }}>
+                Early access
+              </p>
 
-              <h2 style={{ fontSize: 'clamp(32px, 4.5vw, 60px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-0.04em', color: '#fff', margin: '0 0 20px' }}>
-                Start Building.
+              <h2 style={{ fontSize: 'clamp(32px, 4.5vw, 58px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-0.04em', color: '#fff', margin: '0 0 24px' }}>
+                Start Building.<br /><span style={{ color: '#FEC944' }}>Join the Beta.</span>
               </h2>
-              <p style={{ fontSize: 17, lineHeight: 1.65, color: 'rgba(255,255,255,0.5)', maxWidth: 420, margin: '0 0 36px' }}>
-                Deploy healthcare infrastructure for your organization. Launch in weeks, not quarters.
+              <p style={{ fontSize: 16, lineHeight: 1.75, color: 'rgba(255,255,255,0.5)', maxWidth: 400, margin: '0 0 16px' }}>
+                We&apos;ve built the infrastructure we wish existed when we started — and we&apos;re just getting started. Be among the first teams to go live on rxlibrary.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(255,255,255,0.28)', maxWidth: 380, margin: '0 0 40px', fontStyle: 'italic' }}>
+                HIPAA · SOC2 · FHIR R4 · API-first · Enterprise-ready
               </p>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
@@ -1785,7 +2830,7 @@ export default function HomePage() {
                     borderRadius: 12, fontSize: 14, fontWeight: 700, padding: '14px 32px',
                   }}
                 >
-                  Login
+                  Log In
                 </a>
                 <a
                   href="/demo"
